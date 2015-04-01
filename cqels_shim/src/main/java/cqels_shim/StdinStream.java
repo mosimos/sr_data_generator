@@ -56,6 +56,8 @@ public class StdinStream extends RDFStream implements Runnable
 				JSONArray array = (JSONArray) obj;
 
 				//stream the triple
+				//System.out.println((String) array.get(0) + " " + (String) array.get(1) + " " + (String) array.get(2));
+				//System.out.println(n((String) array.get(0)) + " " + n((String) array.get(1)) + " " + n((String) array.get(2)));
 				stream(n((String) array.get(0)), n((String) array.get(1)), n((String) array.get(2)));
 				//System.out.println("triple streamed");
 
@@ -72,6 +74,10 @@ public class StdinStream extends RDFStream implements Runnable
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public static  Node n(String st){
+		return Node.createURI(st);
 	}
 }
 

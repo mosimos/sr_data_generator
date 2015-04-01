@@ -15,7 +15,8 @@ for line in f:
     if m:
         print(json.dumps(m.groups()))
     else:
-        triple = line.split(" ")
+        triple = line.rstrip()
+        triple = triple.split(" ")
         if len(triple) == 3:
             print(json.dumps(triple))
         else:

@@ -23,7 +23,7 @@ public class CqelsShim
 		final ExecContext context = new ExecContext(home, false);
 
 		//TODO figure out how loading this should work
-		context.loadDataset("http://deri.org/floorplan/", "cqels_data/floorplan.rdf");
+		//context.loadDataset("http://deri.org/floorplan/", "../cqels_data/floorplan.rdf");
 		context.loadDefaultDataset(path);
 
 		//initialize stream
@@ -31,7 +31,19 @@ public class CqelsShim
 
 		//register query
 		//TODO read query from file
-		String queryString = "PREFIX lv: <http://deri.org/floorplan/>PREFIX dc: <http://purl.org/dc/elements/1.1/> PREFIX foaf: <http://xmlns.com/foaf/0.1/> SELECT ?locName  FROM NAMED <http://deri.org/floorplan/>WHERE {STREAM <http://deri.org/streams/rfid> [NOW] {?person lv:detectedAt ?loc} {?person foaf:name \"AUTHORNAME\"^^<http://www.w3.org/2001/XMLSchema#string> }GRAPH <http://deri.org/floorplan/> {?loc lv:name ?locName}}";
+		String queryString = "PREFIX lv: <http://deri.org/floorplan/> " +
+			"PREFIX dc: <http://purl.org/dc/elements/1.1/> " +
+			"PREFIX foaf: <http://xmlns.com/foaf/0.1/> " +
+			"SELECT ?locName "  +
+			"FROM NAMED <http://deri.org/floorplan/> " +
+			"WHERE { " +
+			"STREAM <http://deri.org/streams/rfid> [NOW] "  +
+			"{?person lv:detectedAt ?loc} "  +
+			//"{?person foaf:name \"AUTHORNAME\"^^<http://www.w3.org/2001/XMLSchema#string> } " +
+			"GRAPH <http://deri.org/floorplan/> "  +
+			"{?loc lv:name ?locName} " +
+			"}";
+		//String queryString = "PREFIX lv: <http://deri.org/floorplan/> SELECT  ?person1 ?person2 FROM NAMED <http://deri.org/floorplan/> WHERE { GRAPH <http://deri.org/floorplan/>  {?loc1 lv:connected ?loc2} STREAM <http://deri.org/streams/rfid> [NOW] {?person1 lv:detectedAt ?loc1} STREAM <http://deri.org/streams/rfid> [RANGE 3s] {?person2 lv:detectedAt ?loc2} }";
 
 		ContinuousSelect selQuery = context.registerSelect(queryString);
 		selQuery.register(new ContinuousListener() {
