@@ -16,55 +16,40 @@
 
 #TODO argument handling
 #TODO exception handling
-#TODO proper URIs
 #TODO performance?
 
 from transitfeed import Loader, Schedule
-from rdflib import Graph, URIRef, Literal, BNode
+from rdflib import Graph, URIRef, Literal, BNode, Namespace
 
 sched = Loader('../gtfs_datasets/austin').Load()
 g = Graph()
 f = open('../data_austin.rdf', 'w')
 
-hassID = URIRef('http://example.com/hasstopid')
-hassname = URIRef('http://example.com/hasstopname')
-hasrID = URIRef('http://example.com/hasrouteid')
-hasrname = URIRef('http://example.com/hasroutename')
-hasrtype = URIRef('http://example.com/hasroutetype')
-tripuriprefix = 'http://example.com/trip'
-hastID = URIRef('http://example.com/hastripid')
-hasdir = URIRef('http://example.com/hasdir')
-hasst = URIRef('http://example.com/hasstoptime')
-hasarrtime = URIRef('http://example.com/hasarrtime')
-hasdeptime = URIRef('http://example.com/hasdeptime')
-hasseq = URIRef('http://example.com/hasseq')
+ns = Namespace('http://kr.tuwien.ac.at/dhsr/')
 
 for stop in sched.GetStopList():
-    s = URIRef(stop.stop_url)
-    g.set((s, hassID, Literal(stop.stop_id)))
-    g.set((s, hassname, Literal(stop.stop_name)))
+    s = ns['stop/' + stop.stop_id]
+    g.set((s, ns.hasName, Literal(stop.stop_name)))
 
 for route in sched.GetRouteList():
-    r = URIRef(route.route_url)
-    g.set((r, hasrID, Literal(route.route_id)))
-    g.set((r, hasrname, Literal(route.route_short_name)))
-    g.set((r, hasrtype, Literal(route.route_type)))
+    r = ns['route/' + route.route_id]
+    g.set((r, ns.hasName, Literal(route.route_short_name)))
+    g.set((r, ns.hasType, Literal(route.route_type)))
 
 for trip in sched.GetTripList():
-    #t = URIRef(tripuriprefix + trip.trip_id)
-    t = BNode()
-    g.set((t, hastID, Literal(trip.trip_id)))
-    g.set((t, hasrID, list(g[ : hasrID : Literal(trip.route_id)])[0]))  #TODO check if list() is dumb
-    g.set((t, hasdir, Literal(trip.direction_id)))
+    t = ns['trip/' + trip.trip_id]
+    g.set((t, ns.isonRoute, ns['route/' + trip.route_id]))
+    g.set((t, ns.hasDirection, Literal(trip.direction_id)))
+    g.set((t, ns.isAccessible, Literal(trip.wheelchair_accessible)))
 
     for stoptime in trip.GetStopTimes():
         st = BNode()
-        g.add((t, hasst, st))
-        g.set((st, hassID, list(g[ : hassID : Literal(stoptime.stop_id)])[0]))
+        g.add((t, ns.hasStt, st))
+        g.set((st, ns.atStop, ns['stop/' + stoptime.stop_id]))
         #TODO change for arrival_secs and departure_secs ?
-        g.set((st, hasarrtime, Literal(stoptime.arrival_time)))
-        g.set((st, hasdeptime, Literal(stoptime.departure_time)))
-        g.set((st, hasseq, Literal(stoptime.stop_sequence)))
+        g.set((st, ns.hasArrtime, Literal(stoptime.arrival_time)))
+        g.set((st, ns.hasDeptime, Literal(stoptime.departure_time)))
+        g.set((st, ns.isSeq, Literal(stoptime.stop_sequence)))
 
-f.write(g.serialize())
+f.write(g.serialize(format = 'turtle'))
 
