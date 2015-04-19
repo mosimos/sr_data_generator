@@ -36,7 +36,7 @@ import org.json.simple.parser.ParseException;
 public class StdinStream extends RDFStream implements Runnable
 {
 	boolean stop = false;
-	long sleep = 500;
+	long sleep = 0;
 
 	/**
 	 * @param context
@@ -68,14 +68,15 @@ public class StdinStream extends RDFStream implements Runnable
 			String line;
 
 			while ((line = reader.readLine()) != null && !stop) {
-				Object obj = parser.parse(line);
-				JSONArray array = (JSONArray) obj;
+				try {
+					Object obj = parser.parse(line);
+					JSONArray array = (JSONArray) obj;
 
-				//stream the triple
-				//System.out.println((String) array.get(0) + " " + (String) array.get(1) + " " + (String) array.get(2));
-				//System.out.println(n((String) array.get(0)) + " " + n((String) array.get(1)) + " " + n((String) array.get(2)));
-				stream(n((String) array.get(0)), n((String) array.get(1)), n((String) array.get(2)));
-				//System.out.println("triple streamed");
+					//stream the triple
+					stream(n((String) array.get(0)), n((String) array.get(1)), n((String) array.get(2)));
+				} catch (ParseException pe) {
+					System.err.println("Error when parsing input, incorrect JSON.");
+				}
 
 				if (sleep > 0) {
 					try {
@@ -86,8 +87,6 @@ public class StdinStream extends RDFStream implements Runnable
 				}
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (ParseException e) {
 			e.printStackTrace();
 		}
 	}
