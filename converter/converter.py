@@ -21,9 +21,9 @@
 from transitfeed import Loader, Schedule
 from rdflib import Graph, URIRef, Literal, BNode, Namespace
 
-sched = Loader('../gtfs_datasets/austin').Load()
+sched = Loader('../gtfs_datasets/portland').Load()
 g = Graph()
-f = open('../data_austin.rdf', 'w')
+f = open('../data_portland.ttl', 'w')
 
 ns = Namespace('http://kr.tuwien.ac.at/dhsr/')
 
@@ -36,14 +36,20 @@ for route in sched.GetRouteList():
     g.set((r, ns.hasName, Literal(route.route_short_name)))
     g.set((r, ns.hasType, Literal(route.route_type)))
 
+#i = 0
+
 for trip in sched.GetTripList():
+    #if i == 100:
+        #break
+    #i += 1
+
     t = ns['trip/' + trip.trip_id]
     g.set((t, ns.isonRoute, ns['route/' + trip.route_id]))
     g.set((t, ns.hasDirection, Literal(trip.direction_id)))
     g.set((t, ns.isAccessible, Literal(trip.wheelchair_accessible)))
 
     for stoptime in trip.GetStopTimes():
-        st = BNode()
+        st = ns['stoptime/' + str(trip.trip_id) + str(stoptime.stop_sequence)]
         g.add((t, ns.hasStt, st))
         g.set((st, ns.atStop, ns['stop/' + stoptime.stop_id]))
         #TODO change for arrival_secs and departure_secs ?
