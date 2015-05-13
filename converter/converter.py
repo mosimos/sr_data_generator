@@ -21,9 +21,12 @@
 from transitfeed import Loader, Schedule
 from rdflib import Graph, URIRef, Literal, BNode, Namespace
 
-sched = Loader('../gtfs_datasets/portland').Load()
+sched = Loader('./gtfs_datasets/portland').Load()
+#g = Graph(store='Sleepycat')
+#g.open('/home/mosi/rdflibstore', create=True)
 g = Graph()
-f = open('../data_portland.ttl', 'w')
+
+f = open('./data_portland_small.ttl', 'w')
 
 ns = Namespace('http://kr.tuwien.ac.at/dhsr/')
 
@@ -36,12 +39,12 @@ for route in sched.GetRouteList():
     g.set((r, ns.hasName, Literal(route.route_short_name)))
     g.set((r, ns.hasType, Literal(route.route_type)))
 
-#i = 0
+i = 0
 
 for trip in sched.GetTripList():
-    #if i == 100:
-        #break
-    #i += 1
+    if i == 15:
+        break
+    i += 1
 
     t = ns['trip/' + trip.trip_id]
     g.set((t, ns.isonRoute, ns['route/' + trip.route_id]))
@@ -58,4 +61,5 @@ for trip in sched.GetTripList():
         g.set((st, ns.isSeq, Literal(stoptime.stop_sequence)))
 
 f.write(g.serialize(format = 'turtle'))
+g.close()
 
