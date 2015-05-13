@@ -52,7 +52,9 @@ public class CqelsShim
 			lines = Files.readAllLines(qpath, StandardCharsets.UTF_8);
 
 			for (String s : lines) {
-				sb.append(s).append(" ");
+				if (!s.startsWith("#")) {
+					sb.append(s).append(" ");
+				}
 			}
 		} catch (IOException e) {
 			System.exit(-1);
@@ -82,6 +84,7 @@ public class CqelsShim
 		ContinuousSelect selQuery = context.registerSelect(queryString);
 		selQuery.register(new ContinuousListener() {
 			public void update(Mapping mapping) {
+				System.out.println("result:");
 				String result = "";
 				for(Iterator<Var> vars = mapping.vars(); vars.hasNext(); ) {
 					//Use context.engine().decode(...) to decode the encoded value to RDF Node
