@@ -37,8 +37,6 @@ import eu.larkc.csparql.core.engine.CsparqlEngine;
 import eu.larkc.csparql.core.engine.CsparqlEngineImpl;
 import eu.larkc.csparql.core.engine.CsparqlQueryResultProxy;
 
-import eu.larkc.csparql.readytogopack.streamer.BasicIntegerRDFStreamTestGenerator;
-
 import csparql_shim.StdinStream;
 
 /**
