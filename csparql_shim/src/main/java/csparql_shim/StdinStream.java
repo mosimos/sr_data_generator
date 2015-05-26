@@ -115,6 +115,12 @@ public class StdinStream extends RdfStream implements Runnable
 						//System.out.println((String) array.get(0) + " " + (String) array.get(1) + " " + (String) array.get(2));
 						this.put(q);
 						triplecount++;
+						System.out.println("triple sent at: " + System.currentTimeMillis());
+						if (triplecount == 3) {
+							end = true;
+							stop = true;
+							break;
+						}
 					} catch (ParseException pe) {
 						System.err.println("Error when parsing input, incorrect JSON.");
 					}
