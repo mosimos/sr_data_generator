@@ -79,6 +79,9 @@ public class StdinStream extends RdfStream implements Runnable
 		this.rate = rate;
 	}
 
+	//pause at the end of the streaming window to avoid edge cases
+	public static double sync_pause = 30;
+
 	/**
 	 * start listening to stdin and forwarding to csparql
 	 */
@@ -92,6 +95,7 @@ public class StdinStream extends RdfStream implements Runnable
 			long sttime = System.currentTimeMillis();
 			int windowcount = 1;
 
+			//loop for streaming in data
 			while ((line = reader.readLine()) != null && !stop) {
 
 				if (this.pausePeriod > 0) {
@@ -102,9 +106,10 @@ public class StdinStream extends RdfStream implements Runnable
 					}
 				}
 
-				boolean end = false;
+				boolean endThisWindow = false;
 				int triplecount = 0;
 
+				// loop for one window
 				do {
 					try {
 						Object obj = parser.parse(line);
@@ -116,27 +121,27 @@ public class StdinStream extends RdfStream implements Runnable
 						this.put(q);
 						triplecount++;
 						System.out.println("triple sent at: " + System.currentTimeMillis());
-						if (triplecount == 3) {
-							end = true;
-							stop = true;
-							break;
-						}
+						//if (triplecount == 3) {
+						//	endThisWindow = true;
+							//stop = true;
+						//	break;
+						//}
 					} catch (ParseException pe) {
 						System.err.println("Error when parsing input, incorrect JSON.");
 					}
 
-					if (sttime + (this.windowPeriod * windowcount) - 30 < System.currentTimeMillis()) {
+					if (sttime + (this.windowPeriod * windowcount) - sync_pause < System.currentTimeMillis()) {
 						windowcount++;
-						end = true;
+						endThisWindow = true;
 					}
 					else {
 						try {
-							Thread.sleep(rate);	//otherwise CSPARQL doesn't seem to work
+							Thread.sleep(rate);
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}
 					}
-				} while (!end);
+				} while (!endThisWindow);
 				System.out.println(triplecount + " triples streamed in streaming window");
 			}
 		} catch (IOException e) {
