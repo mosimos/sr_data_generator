@@ -38,7 +38,9 @@ import eu.larkc.csparql.cep.api.RdfStream;
 public class StdinStream extends RdfStream implements Runnable
 {
 	boolean stop = false;
-	long sleep = 1;
+	long windowPeriod = 0;
+	long pausePeriod = 0;
+	long rate = 1;
 
 	/** The logger. */
 	protected final Logger logger = LoggerFactory.getLogger(StdinStream.class);	
@@ -57,10 +59,24 @@ public class StdinStream extends RdfStream implements Runnable
 	}
 
 	/**
-	 * @param rate
+	 * @param windowPeriod
 	 */
-	public void setRate(int rate) {
-		sleep = 1000 / rate;
+	public void setWindowPeriod(long windowPeriod) {
+		this.windowPeriod = windowPeriod;
+	}
+
+	/**
+	 * @param pausePeriod
+	 */
+	public void setPausePeriod(long pausePeriod) {
+		this.pausePeriod = pausePeriod;
+	}
+
+	/**
+	 * @param pausePeriod
+	 */
+	public void setRate(long rate) {
+		this.rate = rate;
 	}
 
 	/**
@@ -73,27 +89,49 @@ public class StdinStream extends RdfStream implements Runnable
 			BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 			String line;
 
-			System.out.println(getIRI());
+			long sttime = System.currentTimeMillis();
+			int windowcount = 1;
+
 			while ((line = reader.readLine()) != null && !stop) {
-				try {
-					Object obj = parser.parse(line);
-					JSONArray array = (JSONArray) obj;
 
-					//stream the triple
-					final RdfQuadruple q = new RdfQuadruple((String) array.get(0), (String) array.get(1), (String) array.get(2), System.currentTimeMillis());
-					//System.out.println((String) array.get(0) + " " + (String) array.get(1) + " " + (String) array.get(2));
-					this.put(q);
-				} catch (ParseException pe) {
-					System.err.println("Error when parsing input, incorrect JSON.");
-				}
-
-				if (sleep > 0) {
+				if (this.pausePeriod > 0) {
 					try {
-						Thread.sleep(sleep);
+						Thread.sleep(this.pausePeriod);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
 				}
+
+				boolean end = false;
+				int triplecount = 0;
+
+				do {
+					try {
+						Object obj = parser.parse(line);
+						JSONArray array = (JSONArray) obj;
+
+						//stream the triple
+						final RdfQuadruple q = new RdfQuadruple((String) array.get(0), (String) array.get(1), (String) array.get(2), System.currentTimeMillis());
+						//System.out.println((String) array.get(0) + " " + (String) array.get(1) + " " + (String) array.get(2));
+						this.put(q);
+						triplecount++;
+					} catch (ParseException pe) {
+						System.err.println("Error when parsing input, incorrect JSON.");
+					}
+
+					if (sttime + (this.windowPeriod * windowcount) - 30 < System.currentTimeMillis()) {
+						windowcount++;
+						end = true;
+					}
+					else {
+						try {
+							Thread.sleep(rate);	//otherwise CSPARQL doesn't seem to work
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
+				} while (!end);
+				System.out.println(triplecount + " triples streamed in streaming window");
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

@@ -55,6 +55,9 @@ public class CsparqlShim
 
 		String path = args[0];
 		String querypath = args[1];
+		long windowPeriod = Long.parseLong(args[2]);
+		long pausePeriod = Long.parseLong(args[3]);
+		long rate = Long.parseLong(args[4]);
 
 		Path qpath = Paths.get(querypath);
 		List<String> lines;
@@ -95,10 +98,19 @@ public class CsparqlShim
 		engine.initialize(true);
 
 		//TODO find out how to load static data set
-		//context.loadDataset("http://kr.tuwien.ac.at/dhsr/", path);
+		try {
+			byte[] encoded = Files.readAllBytes(Paths.get(path));
+			String content = new String(encoded, StandardCharsets.UTF_8);
+			engine.putStaticNamedModel("http://kr.tuwien.ac.at/dhsr/", content);
+		} catch (IOException e) {
+			System.out.println(e);
+		}
 
 		//initialize stream
 		StdinStream stream = new StdinStream("http://kr.tuwien.ac.at/dhsr/stream");
+		stream.setWindowPeriod(windowPeriod);
+		stream.setPausePeriod(pausePeriod);
+		stream.setRate(rate);
 
 
 		engine.registerStream(stream);
@@ -130,7 +142,7 @@ public class CsparqlShim
 		(new Thread(stream)).start();
 		
 		try {
-			Thread.sleep(5000);
+			Thread.sleep(50000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
