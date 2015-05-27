@@ -1,0 +1,10 @@
+PREFIX ns1: <http://kr.tuwien.ac.at/dhsr/>
+SELECT ?stt_id ?st_id ?del
+WHERE {
+	STREAM <http://kr.tuwien.ac.at/dhsr/stream> [NOW]
+	{?stt_id ns1:hasDelay ?del}
+	OPTIONAL{
+		GRAPH <http://kr.tuwien.ac.at/dhsr/>
+		{?stt_id ns1:atStop ?st_id}
+	}
+	}

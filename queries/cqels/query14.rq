@@ -1,0 +1,16 @@
+#arrival within timespan arround expected
+#TODO change format in export to Arrtime_seconds
+PREFIX ns1: <http://kr.tuwien.ac.at/dhsr/>
+SELECT ?st_name ?real_arr ?plan_arr
+WHERE {
+	STREAM <http://kr.tuwien.ac.at/dhsr/stream> [RANGE 2s]
+	{?stt_id ns1:hasArrived ?real_arr. 
+	}
+	GRAPH <http://kr.tuwien.ac.at/dhsr/>
+	{
+    ?stt_id ns1:atStop ?st_id .
+	?st_id ns1:hasName ?st_name .
+	?stt_id ns1:hasArrtime ?plan_arr .
+    }
+    FILTER (?real_arr > ?plan_arr + 1000)
+}

@@ -1,0 +1,9 @@
+REGISTER QUERY q02 AS
+PREFIX ns1: <http://kr.tuwien.ac.at/dhsr/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?stt_id ?del
+FROM STREAM <http://kr.tuwien.ac.at/dhsr/stream> [RANGE 1s STEP 1s]
+WHERE {
+	?stt_id ns1:hasDelay ?del .
+	FILTER (?del > "30"^^xsd:integer)
+	}

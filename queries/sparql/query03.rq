@@ -1,0 +1,8 @@
+PREFIX ns1: <http://kr.tuwien.ac.at/dhsr/>
+SELECT ?stt_id ?del
+WHERE {
+	{?stt_id ns1:hasDelay ?del.}
+	UNION
+	{?stt_id ns1:hasArrived ?del.}
+	}
+

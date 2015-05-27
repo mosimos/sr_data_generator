@@ -1,0 +1,15 @@
+#doesn't work
+PREFIX ns1: <http://kr.tuwien.ac.at/dhsr/>
+SELECT ?tr_id
+WHERE {
+	STREAM <http://kr.tuwien.ac.at/dhsr/stream> [RANGE 2s]
+	{?stt_id ns1:hasDelay ?del. 
+	}
+	GRAPH <http://kr.tuwien.ac.at/dhsr/>
+	{
+    ?stt_id ns1:atStop ?st_id .
+	?tr_id ns1:hasStt ?stt_id .
+	?st_id ns1:hasName ?st_name .
+    }
+}
+GROUP BY (?tr_id)

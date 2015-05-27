@@ -1,0 +1,17 @@
+#two different trips arrive at same stop within interval
+#(can change trip without waiting)
+PREFIX ns1: <http://kr.tuwien.ac.at/dhsr/>
+SELECT ?st_name ?arr1 ?arr2
+WHERE {
+	STREAM <http://kr.tuwien.ac.at/dhsr/stream> [RANGE 2s]
+	{?stt1_id ns1:hasArrived ?arr1 . 
+	?stt2_id ns1:hasArrived ?arr2 . 
+	}
+	GRAPH <http://kr.tuwien.ac.at/dhsr/>
+	{
+    ?stt1_id ns1:atStop ?st_id .
+    ?stt2_id ns1:atStop ?st_id .
+	?st_id ns1:hasName ?st_name .
+    }
+    FILTER (?stt1_id != ?stt2_id && (?arr1 < ?arr2) && (?arr2 - ?arr1 < 500))
+}

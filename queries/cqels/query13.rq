@@ -1,0 +1,20 @@
+#stop has less delay than stop immediately before it
+PREFIX ns1: <http://kr.tuwien.ac.at/dhsr/>
+SELECT ?st_name ?del ?st2_name ?del2 ?seq ?seq2
+WHERE {
+	STREAM <http://kr.tuwien.ac.at/dhsr/stream> [RANGE 2s]
+	{?stt_id ns1:hasDelay ?del. 
+	?stt2_id ns1:hasDelay ?del2. }
+	GRAPH <http://kr.tuwien.ac.at/dhsr/>
+	{
+    ?stt_id ns1:atStop ?st_id .
+	?stt_id ns1:isSeq ?seq .
+	?tr_id ns1:hasStt ?stt_id .
+    ?tr_id ns1:hasStt ?stt2_id.
+    ?stt2_id ns1:isSeq ?seq2 . 
+    ?stt2_id ns1:atStop ?st2_id .
+	?st_id ns1:hasName ?st_name .
+	?st2_id ns1:hasName ?st2_name .
+    }
+    FILTER ((?seq2 = (?seq + 1)) && (?del2 < ?del))
+}

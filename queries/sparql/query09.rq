@@ -1,0 +1,6 @@
+PREFIX ns1: <http://kr.tuwien.ac.at/dhsr/>
+SELECT (MAX (?del) AS ?M)
+WHERE {
+	?stt_id ns1:hasDelay ?del.
+	}
+

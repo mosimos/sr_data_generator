@@ -1,0 +1,6 @@
+PREFIX ns1: <http://kr.tuwien.ac.at/dhsr/>
+SELECT (Count (?stt_id) AS ?C)
+WHERE {
+	?stt_id ns1:hasDelay ?del.
+	}
+
