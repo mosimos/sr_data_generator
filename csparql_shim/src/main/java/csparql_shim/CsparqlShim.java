@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
@@ -55,20 +57,30 @@ public class CsparqlShim
 
 		String static_data_path = args[0];
 		String querypath = args[1];
-		long windowPeriod = Long.parseLong(args[2]);
-		long pausePeriod = Long.parseLong(args[3]);
-		long rate = Long.parseLong(args[4]);
+		long windowPeriod = 1000;
+		long pausePeriod = Long.parseLong(args[2]);
+		long rate = Long.parseLong(args[3]);
 
 		Path qpath = Paths.get(querypath);
 		List<String> lines;
 		StringBuilder sb = new StringBuilder();
 
+		//read the query from the file given by querypath
 		try {
 			lines = Files.readAllLines(qpath, StandardCharsets.UTF_8);
 
+			Pattern p = Pattern.compile("FROM STREAM.*\\[RANGE (\\d*)s STEP \\d*s\\]");
+
 			for (String s : lines) {
+				//filter out comments
 				if (!s.startsWith("#")) {
 					sb.append(s).append(" ");
+
+					Matcher m = p.matcher(s);
+					if (m.find()) {
+						//set windowPeriod so it matches the RANGE of the query
+						windowPeriod = Long.parseLong(m.group(1)) * 1000;
+					}
 				}
 			}
 		} catch (IOException e) {

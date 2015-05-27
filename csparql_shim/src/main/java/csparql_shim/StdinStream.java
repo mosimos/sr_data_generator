@@ -59,21 +59,21 @@ public class StdinStream extends RdfStream implements Runnable
 	}
 
 	/**
-	 * @param windowPeriod
+	 * @param windowPeriod length of a single streaming window, should match RANGE given in the query
 	 */
 	public void setWindowPeriod(long windowPeriod) {
 		this.windowPeriod = windowPeriod;
 	}
 
 	/**
-	 * @param pausePeriod
+	 * @param pausePeriod length of the pause at the beginning of a streaming window
 	 */
 	public void setPausePeriod(long pausePeriod) {
 		this.pausePeriod = pausePeriod;
 	}
 
 	/**
-	 * @param pausePeriod
+	 * @param pausePeriod length of the pause between single triples
 	 */
 	public void setRate(long rate) {
 		this.rate = rate;
@@ -84,6 +84,7 @@ public class StdinStream extends RdfStream implements Runnable
 
 	/**
 	 * start listening to stdin and forwarding to csparql
+	 * stream in defined windows to allow comparison with cqels
 	 */
 	@Override
 	public void run() {
@@ -117,15 +118,9 @@ public class StdinStream extends RdfStream implements Runnable
 
 						//stream the triple
 						final RdfQuadruple q = new RdfQuadruple((String) array.get(0), (String) array.get(1), (String) array.get(2), System.currentTimeMillis());
-						//System.out.println((String) array.get(0) + " " + (String) array.get(1) + " " + (String) array.get(2));
 						this.put(q);
 						triplecount++;
 						System.out.println("triple sent at: " + System.currentTimeMillis());
-						//if (triplecount == 3) {
-						//	endThisWindow = true;
-							//stop = true;
-						//	break;
-						//}
 					} catch (ParseException pe) {
 						System.err.println("Error when parsing input, incorrect JSON.");
 					}
