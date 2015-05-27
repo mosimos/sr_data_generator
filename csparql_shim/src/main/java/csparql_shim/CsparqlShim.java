@@ -53,7 +53,7 @@ public class CsparqlShim
 			logger.error(e.getMessage(), e);
 		}
 
-		String path = args[0];
+		String static_data_path = args[0];
 		String querypath = args[1];
 		long windowPeriod = Long.parseLong(args[2]);
 		long pausePeriod = Long.parseLong(args[3]);
@@ -97,12 +97,15 @@ public class CsparqlShim
 		//TODO find out what this means
 		engine.initialize(true);
 
-		//TODO find out how to load static data set
+		//load static data set
 		try {
-			byte[] encoded = Files.readAllBytes(Paths.get(path));
-			String content = new String(encoded, StandardCharsets.UTF_8);
-			engine.putStaticNamedModel("http://kr.tuwien.ac.at/dhsr/", content);
+			if (!static_data_path.equals("none")) {
+				byte[] encoded = Files.readAllBytes(Paths.get(static_data_path));
+				String content = new String(encoded, StandardCharsets.UTF_8);
+				engine.putStaticNamedModel("http://kr.tuwien.ac.at/dhsr/", content);
+			}
 		} catch (IOException e) {
+			System.out.println("Couldn't load static data from file " + static_data_path);
 			System.out.println(e);
 		}
 
