@@ -3,6 +3,5 @@ PREFIX ns1: <http://kr.tuwien.ac.at/dhsr/>
 SELECT ?stt_id ?arr
 FROM STREAM <http://kr.tuwien.ac.at/dhsr/stream> [RANGE 5s STEP 5s]
 WHERE {
-#	{?stt_id ns1:hasDelay ?del .}
 	{?stt_id ns1:hasArrived ?arr .}
 }

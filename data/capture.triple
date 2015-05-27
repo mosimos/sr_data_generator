@@ -1,5 +1,4 @@
 http://kr.tuwien.ac.at/dhsr/stoptime/543752624 http://kr.tuwien.ac.at/dhsr/hasArrived "1430779011"^^http://www.w3.org/2001/XMLSchema#integer
-http://kr.tuwien.ac.at/dhsr/stoptime/543752624 http://kr.tuwien.ac.at/dhsr/hasArrived "1430779011"
 http://kr.tuwien.ac.at/dhsr/stoptime/543006118 http://kr.tuwien.ac.at/dhsr/hasArrived "1430780050"^^http://www.w3.org/2001/XMLSchema#integer
 http://kr.tuwien.ac.at/dhsr/stoptime/5425970101 http://kr.tuwien.ac.at/dhsr/hasArrived "1430780052"^^http://www.w3.org/2001/XMLSchema#integer
 http://kr.tuwien.ac.at/dhsr/stoptime/542973616 http://kr.tuwien.ac.at/dhsr/hasArrived "1430780066"^^http://www.w3.org/2001/XMLSchema#integer
