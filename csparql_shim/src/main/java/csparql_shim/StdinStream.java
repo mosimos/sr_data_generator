@@ -136,7 +136,7 @@ public class StdinStream extends RdfStream implements Runnable
 							e.printStackTrace();
 						}
 					}
-				} while (!endThisWindow);
+				} while ((line = reader.readLine()) != null && !endThisWindow);
 				System.out.println(triplecount + " triples streamed in streaming window");
 			}
 		} catch (IOException e) {
