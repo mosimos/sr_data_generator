@@ -23,14 +23,12 @@ import argparse
 #streams triples from a file to a streaming engine
 
 parser = argparse.ArgumentParser(description='Stream triples read from capture_file to stdout')
-parser.add_argument('capture_file')
+parser.add_argument('capture_file', type=argparse.Filetype('r'))
 parser.add_argument('-d', '--delay', type=float, default=0)
 
 args = parser.parse_args()
 
-f = open(args.capture_file, 'r')
-
-for line in f:
+for line in args.capture_file:
     time.sleep(args.delay)
     m = re.match(r"stream_post\((\w+), (\w+), (.+)\).", line)
     if m:

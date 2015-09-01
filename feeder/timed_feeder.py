@@ -25,16 +25,14 @@ import argparse
 #and timestamps at the beginning of every consecutive line
 
 parser = argparse.ArgumentParser(description='Stream triples read from capture_file to stdout')
-parser.add_argument('capture_file')
+parser.add_argument('capture_file', type=argparse.Filetype('r'))
 
 args = parser.parse_args()
 
-f = open(args.capture_file, 'r')
-
-starttime = float(f.readline()[:-1])
+starttime = float(args.capture_file.readline()[:-1])
 offset = time.time() - starttime
 
-for line in f:
+for line in args.capture_file:
     l = line.split(' ', 1)
     m = re.match(r"stream_post\((\w+), (\w+), (.+)\).", l[1])
     if m:

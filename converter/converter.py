@@ -23,7 +23,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Convert GTFS dataset to RDF.')
 parser.add_argument('gtfs_path', help='path to the GTFS dataset')
-parser.add_argument('output_file', help='output file')
+parser.add_argument('output_file', type=argparse.FileType('w'), help='output file')
 parser.add_argument('-f', '--format', choices=['xml', 'n3', 'turtle', 'nt', 'pretty-xml', 'trix'], default='turtle')
 parser.add_argument('-l', '--limit', type=int, default=-1, help='maximum number of trips to convert')
 
@@ -31,8 +31,6 @@ args = parser.parse_args()
 
 sched = Loader(args.gtfs_path).Load()
 g = Graph()
-
-f = open(args.output_file, 'w')
 
 ns = Namespace('http://kr.tuwien.ac.at/dhsr/')
 
@@ -66,6 +64,6 @@ for trip in sched.GetTripList():
         g.set((st, ns.hasDeptime, Literal(stoptime.departure_time)))
         g.set((st, ns.isSeq, Literal(stoptime.stop_sequence)))
 
-f.write(g.serialize(format = args.format))
+args.output_file.write(g.serialize(format = args.format))
 g.close()
 

@@ -27,16 +27,15 @@ import json
 import argparse
 
 parser = argparse.ArgumentParser(description='Capture GTFS-realtime stream to file.')
-parser.add_argument('output_file', help='output file')
+parser.add_argument('output_file', type=argparse.FileType('w'), help='output file')
 parser.add_argument('-t', '--type', choices=['t', 'v', 'b'], help='capture (t)rip updates, (v)ehicles or (b)oth', default='b')
 parser.add_argument('-ts', '--trip_update_stream', help='URL of the GTFS-realtime trip update stream', default='http://developer.trimet.org/ws/V1/TripUpdate/?appID=C06C7AC2D0839173A16C6BC28')
 parser.add_argument('-vs', '--vehicle_stream', help='URL of the GTFS-realtime vehicle stream', default='http://developer.trimet.org/ws/gtfs/VehiclePositions/?appID=C06C7AC2D0839173A16C6BC28')
 parser.add_argument('-n', '--namespace', default='http://kr.tuwien.ac.at/dhsr/')
 parser.add_argument('-l', '--limit', type=int, default=-1, help='maximum number of triples to capture')
+parser.add_argument('-p', '--plain', action='store_true', help='output triples without timestamp, seperated by spaces')
 
 args = parser.parse_args()
-
-out = open(args.output_file, 'w')
 
 ns = Namespace(args.namespace)
 
@@ -75,7 +74,11 @@ if args.type == 'b' or args.type =='t':
                     stop_sequence = stt_update.stop_sequence
                     delay = stt_update.arrival.delay
 
-                    out.write(str(tstamp) + ' ' + json.dumps([ns['stoptime/' + str(trip_id) + str(stop_sequence)], 'ns1:hasDelay', delay]) + '\n')
+                    if (args.plain):
+                        args.output_file.write(str(ns['stoptime/' + str(trip_id) + str(stop_sequence)]) + ' ns1:hasDelay ' + str(delay) + '\n')
+                    else:
+                        args.output_file.write(str(tstamp) + ' ' + json.dumps([ns['stoptime/' + str(trip_id) + str(stop_sequence)], 'ns1:hasDelay', delay]) + '\n')
+
                     #query for stoptime id
                     #res = g.query(q, initBindings={'trip_id': ns['trip/' + trip_id], 'seq_nr': Literal(stop_sequence)})
 
@@ -100,7 +103,11 @@ if args.type == 'b' or args.type =='v':
                         stop_sequence = entity.vehicle.current_stop_sequence
                         tstamp = entity.vehicle.timestamp
 
-                        out.write(str(tstamp) + ' ' + json.dumps([ns['stoptime/' + str(trip_id) + str(stop_sequence)], 'ns1:hasArrived', tstamp]) + '\n')
+                        if (args.plain):
+                            args.output_file.write(str(ns['stoptime/' + str(trip_id) + str(stop_sequence)]) + ' ns1:hasArrived ' + str(tstamp) + '\n')
+                        else:
+                            args.output_file.write(str(tstamp) + ' ' + json.dumps([ns['stoptime/' + str(trip_id) + str(stop_sequence)], 'ns1:hasArrived', tstamp]) + '\n')
+
                         #query for stoptime id
                         #res = g.query(q, initBindings={'trip_id': ns['trip/' + trip_id], 'seq_nr': Literal(stop_sequence)})
 
