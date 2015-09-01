@@ -18,12 +18,18 @@ import sys
 import re
 import json
 import time
+import argparse
 
 #streams triples from a file to a streaming engine
 #expects a timestamp in the first line as starttime
 #and timestamps at the beginning of every consecutive line
 
-f = open(sys.argv[1], 'r')
+parser = argparse.ArgumentParser(description='Stream triples read from capture_file to stdout')
+parser.add_argument('capture_file')
+
+args = parser.parse_args()
+
+f = open(args.capture_file, 'r')
 
 starttime = float(f.readline()[:-1])
 offset = time.time() - starttime

@@ -18,13 +18,20 @@ import sys
 import re
 import json
 import time
+import argparse
 
 #streams triples from a file to a streaming engine
 
-f = open(sys.argv[1], 'r')
+parser = argparse.ArgumentParser(description='Stream triples read from capture_file to stdout')
+parser.add_argument('capture_file')
+parser.add_argument('-d', '--delay', type=float, default=0)
+
+args = parser.parse_args()
+
+f = open(args.capture_file, 'r')
 
 for line in f:
-    time.sleep(0.003)
+    time.sleep(args.delay)
     m = re.match(r"stream_post\((\w+), (\w+), (.+)\).", line)
     if m:
         print(json.dumps(m.groups()))
