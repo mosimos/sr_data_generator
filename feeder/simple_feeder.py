@@ -23,7 +23,7 @@ import argparse
 #streams triples from a file to a streaming engine
 
 parser = argparse.ArgumentParser(description='Stream triples read from capture_file to stdout')
-parser.add_argument('capture_file', type=argparse.Filetype('r'))
+parser.add_argument('capture_file', type=argparse.FileType('r'))
 parser.add_argument('-d', '--delay', type=float, default=0)
 
 args = parser.parse_args()

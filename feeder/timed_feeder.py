@@ -25,7 +25,7 @@ import argparse
 #and timestamps at the beginning of every consecutive line
 
 parser = argparse.ArgumentParser(description='Stream triples read from capture_file to stdout')
-parser.add_argument('capture_file', type=argparse.Filetype('r'))
+parser.add_argument('capture_file', type=argparse.FileType('r'))
 
 args = parser.parse_args()
 
