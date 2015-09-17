@@ -14,8 +14,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-# TODO loop (and eliminate potential duplicates?)
-# TODO limit
+#TODO limit is pretty wonky because of duplicate elimination - remove it?
 
 
 from rdflib import Graph, URIRef, Literal, Namespace
@@ -25,6 +24,7 @@ import urllib
 import time
 import json
 import argparse
+from subprocess import call
 
 parser = argparse.ArgumentParser(description='Capture GTFS-realtime stream to file.')
 parser.add_argument('output_file', type=argparse.FileType('w'), help='output file')
@@ -33,7 +33,7 @@ parser.add_argument('-ts', '--trip_update_stream', help='URL of the GTFS-realtim
 parser.add_argument('-vs', '--vehicle_stream', help='URL of the GTFS-realtime vehicle stream', default='http://developer.trimet.org/ws/gtfs/VehiclePositions/?appID=C06C7AC2D0839173A16C6BC28')
 parser.add_argument('-n', '--namespace', default='http://kr.tuwien.ac.at/dhsr/')
 parser.add_argument('-l', '--limit', type=int, default=-1, help='maximum number of triples to capture')
-parser.add_argument('-p', '--plain', action='store_true', help='output triples without timestamp, seperated by spaces')
+parser.add_argument('-p', '--plain', action='store_true', help='output triples without timestamp, separated by spaces')
 
 args = parser.parse_args()
 
@@ -44,7 +44,7 @@ ns = Namespace(args.namespace)
 g = Graph()
 #g.parse('./data_portland.ttl', format='turtle')
 
-print('graph parsed')
+#print('graph parsed')
 
 q = prepareQuery('SELECT ?stt_id '
         'WHERE { '
@@ -54,68 +54,87 @@ q = prepareQuery('SELECT ?stt_id '
 
 feed = gtfs_realtime_pb2.FeedMessage()
 
-if args.type == 'b' or args.type =='t':
-    response = urllib.urlopen(args.trip_update_stream)
-    feed.ParseFromString(response.read())
+count = 0
+request_tstamp = 0
 
-    if feed.header.HasField('timestamp'):
-        tstamp = feed.header.timestamp
-    else:
-        tstamp = time.time()
+print "Starting capture, press Ctrl-C to stop."
 
-    for entity in feed.entity:
-        if (entity.HasField('trip_update')
-                and entity.trip_update.trip.HasField('trip_id')):
-            trip_id = entity.trip_update.trip.trip_id
-            for stt_update in entity.trip_update.stop_time_update:
-                if (stt_update.HasField('stop_sequence')
-                        and stt_update.HasField('arrival')
-                        and stt_update.arrival.HasField('delay')):
-                    stop_sequence = stt_update.stop_sequence
-                    delay = stt_update.arrival.delay
+while True:
+    try:
+        if args.type == 'b' or args.type =='t':
+            response = urllib.urlopen(args.trip_update_stream)
+            feed.ParseFromString(response.read())
 
-                    if (args.plain):
-                        args.output_file.write(str(ns['stoptime/' + str(trip_id) + str(stop_sequence)]) + ' ns1:hasDelay ' + str(delay) + '\n')
-                    else:
-                        args.output_file.write(str(tstamp) + ' ' + json.dumps([ns['stoptime/' + str(trip_id) + str(stop_sequence)], 'ns1:hasDelay', delay]) + '\n')
+            if feed.header.HasField('timestamp'):
+                tstamp = feed.header.timestamp
+            else:
+                tstamp = time.time()
 
-                    #query for stoptime id
-                    #res = g.query(q, initBindings={'trip_id': ns['trip/' + trip_id], 'seq_nr': Literal(stop_sequence)})
+            for entity in feed.entity:
+                if (entity.HasField('trip_update')
+                        and entity.trip_update.trip.HasField('trip_id')):
+                    trip_id = entity.trip_update.trip.trip_id
+                    for stt_update in entity.trip_update.stop_time_update:
+                        if (stt_update.HasField('stop_sequence')
+                                and stt_update.HasField('arrival')
+                                and stt_update.arrival.HasField('delay')):
+                            stop_sequence = stt_update.stop_sequence
+                            delay = stt_update.arrival.delay
 
-                    #if len(res) == 1:
-                        #out.write(str(tstamp) + ' ' + json.dumps([res[0][0], 'ns1:hasDelay', delay]))
-                        #print('triple written')
-                    #else:
-                        #print('error: unable to get stoptime_id for trip_id ' + str(trip_id) + ' seqnr ' + str(stop_sequence))
+                            if (args.plain):
+                                args.output_file.write(str(ns['stoptime/' + str(trip_id) + str(stop_sequence)]) + ' ns1:hasDelay ' + str(delay) + '\n')
+                            else:
+                                args.output_file.write(str(tstamp) + ' ' + json.dumps([ns['stoptime/' + str(trip_id) + str(stop_sequence)], 'ns1:hasDelay', delay]) + '\n')
+
+                            #duplicate elimination is tricky here, so we don't count these triples
+                            #count += 1
+
+                            #if count == args.limit:
+                                #raise KeyboardInterrupt
 
 
-if args.type == 'b' or args.type =='v':
-    response = urllib.urlopen(args.vehicle_stream)
-    feed.ParseFromString(response.read())
+        if args.type == 'b' or args.type =='v':
+            if request_tstamp == 0:
+                response = urllib.urlopen(args.vehicle_stream)
+            else:
+                response = urllib.urlopen(args.vehicle_stream + "&since=" + str(int(request_tstamp)))
 
-    for entity in feed.entity:
-        if entity.HasField('vehicle'):
-            if entity.vehicle.current_status == 1:
-                if entity.vehicle.trip.HasField('trip_id'):
-                    trip_id = entity.vehicle.trip.trip_id
-                    if (entity.vehicle.HasField('current_stop_sequence')
-                            and entity.vehicle.HasField('timestamp')):
-                        stop_sequence = entity.vehicle.current_stop_sequence
-                        tstamp = entity.vehicle.timestamp
+            request_tstamp = time.time()
+            feed.ParseFromString(response.read())
 
-                        if (args.plain):
-                            args.output_file.write(str(ns['stoptime/' + str(trip_id) + str(stop_sequence)]) + ' ns1:hasArrived ' + str(tstamp) + '\n')
-                        else:
-                            args.output_file.write(str(tstamp) + ' ' + json.dumps([ns['stoptime/' + str(trip_id) + str(stop_sequence)], 'ns1:hasArrived', tstamp]) + '\n')
+            for entity in feed.entity:
+                if entity.HasField('vehicle'):
+                    if entity.vehicle.current_status == 1:
+                        if entity.vehicle.trip.HasField('trip_id'):
+                            trip_id = entity.vehicle.trip.trip_id
+                            if (entity.vehicle.HasField('current_stop_sequence')
+                                    and entity.vehicle.HasField('timestamp')):
+                                stop_sequence = entity.vehicle.current_stop_sequence
+                                tstamp = entity.vehicle.timestamp
 
-                        #query for stoptime id
-                        #res = g.query(q, initBindings={'trip_id': ns['trip/' + trip_id], 'seq_nr': Literal(stop_sequence)})
+                                if (args.plain):
+                                    args.output_file.write(str(ns['stoptime/' + str(trip_id) + str(stop_sequence)]) + ' ns1:hasArrived ' + str(tstamp) + '\n')
+                                else:
+                                    args.output_file.write(str(tstamp) + ' ' + json.dumps([ns['stoptime/' + str(trip_id) + str(stop_sequence)], 'ns1:hasArrived', tstamp]) + '\n')
+                                count += 1
 
-                        #if len(res) == 1:
-                            #out.write(str(tstamp) + ' ' + json.dumps([res[0][0], 'ns1:hasArrived', tstamp]))
-                            #print('triple written')
-                        #else:
-                            #print('error: unable to get stoptime_id for trip_id ' + str(trip_id) + ' seqnr ' + str(stop_sequence))
+                                if count == args.limit:
+                                    raise KeyboardInterrupt
 
+        time.sleep(1)
+
+
+    except KeyboardInterrupt:
+        break
+
+
+#first, sort ignoring timestamps to eliminate duplicate triples
+call(["sort", "-k2", "-u", "-o", args.output_file.name + "_s", args.output_file.name])
+
+#sort by timestamp
+call(["sort", "-u", "-o", args.output_file.name + "_s2", args.output_file.name + "_s"])
+
+call(["mv", args.output_file.name + "_s2", args.output_file.name])
+call(["rm", args.output_file.name + "_s"])
 
 
