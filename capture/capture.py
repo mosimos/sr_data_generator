@@ -33,7 +33,7 @@ parser.add_argument('-ts', '--trip_update_stream', help='URL of the GTFS-realtim
 parser.add_argument('-vs', '--vehicle_stream', help='URL of the GTFS-realtime vehicle stream', default='http://developer.trimet.org/ws/gtfs/VehiclePositions/?appID=C06C7AC2D0839173A16C6BC28')
 parser.add_argument('-n', '--namespace', default='http://kr.tuwien.ac.at/dhsr/')
 parser.add_argument('-l', '--limit', type=int, default=-1, help='maximum number of triples to capture')
-parser.add_argument('-p', '--plain', action='store_true', help='output triples without timestamp, separated by spaces')
+parser.add_argument('-p', '--plain', action='store_true', help='output triples without timestamp')
 
 args = parser.parse_args()
 
@@ -84,7 +84,7 @@ while True:
                             if (args.plain):
                                 args.output_file.write(str(ns['stoptime/' + str(trip_id) + str(stop_sequence)]) + ' ns1:hasDelay ' + str(delay) + '\n')
                             else:
-                                args.output_file.write(str(tstamp) + ' ' + json.dumps([ns['stoptime/' + str(trip_id) + str(stop_sequence)], 'ns1:hasDelay', delay]) + '\n')
+                                args.output_file.write(str(tstamp) + ' ' + str(ns['stoptime/' + str(trip_id) + str(stop_sequence)]) + ' ns1:hasDelay ' + str(delay) + '\n')
 
                             #duplicate elimination is tricky here, so we don't count these triples
                             #count += 1
@@ -115,7 +115,7 @@ while True:
                                 if (args.plain):
                                     args.output_file.write(str(ns['stoptime/' + str(trip_id) + str(stop_sequence)]) + ' ns1:hasArrived ' + str(tstamp) + '\n')
                                 else:
-                                    args.output_file.write(str(tstamp) + ' ' + json.dumps([ns['stoptime/' + str(trip_id) + str(stop_sequence)], 'ns1:hasArrived', tstamp]) + '\n')
+                                    args.output_file.write(str(tstamp) + ' ' + str(ns['stoptime/' + str(trip_id) + str(stop_sequence)]) + ' ns1:hasArrived ' + str(tstamp) + '\n')
                                 count += 1
 
                                 if count == args.limit:

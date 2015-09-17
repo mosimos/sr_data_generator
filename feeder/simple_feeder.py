@@ -30,6 +30,7 @@ args = parser.parse_args()
 
 for line in args.capture_file:
     time.sleep(args.delay)
+    #CQELS example data - why is this even still here?
     m = re.match(r"stream_post\((\w+), (\w+), (.+)\).", line)
     if m:
         print(json.dumps(m.groups()))
@@ -37,9 +38,14 @@ for line in args.capture_file:
         triple = line.rstrip()
         triple = triple.split(" ")
         if len(triple) == 3:
+            #simple triple, separated by blanks
             print(json.dumps(triple))
         else:
-            print('match error')
+            if len(triple) == 4:
+                #simple triple, separated by blanks, timestamp in the front
+                print(json.dumps(triple[1:4]))
+            else:
+                print('match error')
 
 
 
