@@ -24,9 +24,10 @@ object Reasoner {
 
     //work with triples
 
-    val arrived = triple_objects.filter(_(1).contains("hasArrived"))
+    val windowed = triple_objects.window(Seconds(1), Seconds(1))
+    val arrived = windowed.filter(_(1).contains("hasArrived"))
 
-    val arr_stts = arrived.map(_(0))
+    val arr_stts = arrived.map(x => (x(0),x(2)))
 
     arr_stts.print()
 
