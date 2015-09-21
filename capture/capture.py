@@ -22,7 +22,6 @@ from rdflib.plugins.sparql import prepareQuery
 from google.transit import gtfs_realtime_pb2
 import urllib
 import time
-import json
 import argparse
 from subprocess import call
 
