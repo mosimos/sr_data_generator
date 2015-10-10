@@ -41,7 +41,7 @@ ns = Namespace('http://kr.tuwien.ac.at/dhsr/')
 
 for stop in sched.GetStopList():
     if asp:
-        args.output_file.write('hasName(stop' + stop.stop_id + ', "' + stop.stop_name + '").\n')
+        args.output_file.write('hasName(stop' + stop.stop_id.replace('-', '') + ', "' + stop.stop_name + '").\n')
     else:
         s = ns['stop/' + stop.stop_id]
         g.set((s, ns.hasName, Literal(stop.stop_name)))
@@ -66,7 +66,8 @@ for trip in sched.GetTripList():
     if asp:
         args.output_file.write('isonRoute(trip' + trip.trip_id + ', route' + trip.route_id + ').\n')
         args.output_file.write('hasDirection(trip' + trip.trip_id + ', ' + trip.direction_id + ').\n')
-        args.output_file.write('isAccessible(trip' + trip.trip_id + ', ' + str(trip.wheelchair_accessible) + ').\n')
+        if trip.wheelchair_accessible != None:
+            args.output_file.write('isAccessible(trip' + trip.trip_id + ', ' + str(trip.wheelchair_accessible) + ').\n')
     else:
         t = ns['trip/' + trip.trip_id]
         g.set((t, ns.isonRoute, ns['route/' + trip.route_id]))
