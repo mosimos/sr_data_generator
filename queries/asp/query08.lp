@@ -6,4 +6,7 @@
 %	?stt_id ns1:hasDelay ?del.
 %	}
 
-%TODO
+%TODO is this right?
+
+q(X) :- X = #count {Stt : hasDelay(Stt, Del).}.
+#show q/1.

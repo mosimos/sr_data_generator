@@ -1,5 +1,4 @@
 #arrival within timespan arround expected
-#TODO change format in export to Arrtime_seconds
 PREFIX ns1: <http://kr.tuwien.ac.at/dhsr/>
 SELECT ?st_name ?real_arr ?plan_arr
 WHERE {
