@@ -6,11 +6,14 @@ import kafka.serializer.StringDecoder
 import org.apache.spark._
 import org.apache.spark.streaming._
 import org.apache.spark.streaming.kafka._
+import org.apache.spark.streaming.dstream.DStream
+
+import scala.annotation.switch
 
 object Reasoner {
   def main(args: Array[String]) {
 
-    var query = args(0).toInt()
+    var query = args(0).toInt
 
     val conf = new SparkConf().setAppName("Reasoner")
     val ssc = new StreamingContext(conf, Seconds(1))
@@ -27,8 +30,7 @@ object Reasoner {
 
     //work with triples
 
-    @switch
-    query match {
+    (query: @switch) match {
       case 1 => query01(triple_objects)
       case 2 => query02(triple_objects)
       case 3 => query03(triple_objects)
@@ -48,7 +50,7 @@ object Reasoner {
     ssc.awaitTermination()
   }
 
-  def query01(triple_objects: DStream) {
+  def query01(triple_objects: DStream[Array[String]]) {
     val windowed = triple_objects.window(Seconds(1), Seconds(1))
     val arrived = windowed.filter(_(1).contains("hasArrived"))
 
@@ -57,17 +59,17 @@ object Reasoner {
     result.print()
   }
 
-  def query02(triple_objects: DStream) {
+  def query02(triple_objects: DStream[Array[String]]) {
     val windowed = triple_objects.window(Seconds(1), Seconds(1))
     val arrived = windowed.filter(_(1).contains("hasArrived"))
-    val arrived_30 = windowed.filter(_(2) > 30)
+    val arrived_30 = windowed.filter(_(2).toInt > 30)
 
     val result = arrived_30.map(x => (x(0), x(2)))
 
     result.print()
   }
 
-  def query03(triple_objects: DStream) {
+  def query03(triple_objects: DStream[Array[String]]) {
     val windowed = triple_objects.window(Seconds(1), Seconds(1))
     val delayed = windowed.filter(_(1).contains("hasDelay"))
     val arrived = windowed.filter(_(1).contains("hasArrived"))
@@ -78,7 +80,7 @@ object Reasoner {
     result.print()
   }
 
-  def query04(triple_objects: DStream) {
+  def query04(triple_objects: DStream[Array[String]]) {
     val windowed = triple_objects.window(Seconds(1), Seconds(1))
     val delayed = windowed.filter(_(1).contains("hasDelay")).map(x => (x(0), x(2)))
     val arrived = windowed.filter(_(1).contains("hasArrived")).map(x => (x(0), x(2)))
@@ -87,26 +89,24 @@ object Reasoner {
     joined.print()
   }
 
-  def query05(triple_objects: DStream) {
+  def query05(triple_objects: DStream[Array[String]]) {
     val windowed = triple_objects.window(Seconds(1), Seconds(1))
     val delayed = windowed.filter(_(1).contains("hasDelay"))
 
-    val result = delayed.map(x => (x(0), x(2) / 60))
+    val result = delayed.map(x => (x(0), x(2).toInt / 60))
 
     result.print()
   }
 
-  def query06(triple_objects: DStream) {
+  def query06(triple_objects: DStream[Array[String]]) {
     val windowed = triple_objects.window(Seconds(1), Seconds(1))
     val delayed = windowed.filter(_(1).contains("hasDelay"))
-    val delayed_min = delayed.map(x => (x(0), x(1), x(2) / 60))
-
-    val result = arrived.map(x => (x(0), x(2)))
+    val result = delayed.map(x => (x(0), x(2).toInt / 60))
 
     result.print()
   }
 
-  def query07(triple_objects: DStream) {
+  def query07(triple_objects: DStream[Array[String]]) {
     val delayed = triple_objects.filter(_(1).contains("hasDelay"))
     val stt = delayed.map(x => x(0))
     val count = stt.countByWindow(Seconds(1), Seconds(1))
@@ -116,7 +116,7 @@ object Reasoner {
     count.print()
   }
 
-  def query08(triple_objects: DStream) {
+  def query08(triple_objects: DStream[Array[String]]) {
     val delayed = triple_objects.filter(_(1).contains("hasDelay"))
     val stt = delayed.map(x => x(0))
     val count = stt.countByValueAndWindow(Seconds(1), Seconds(1))
@@ -126,25 +126,25 @@ object Reasoner {
     count.print()
   }
 
-  def query09(triple_objects: DStream) {
+  def query09(triple_objects: DStream[Array[String]]) {
     val delayed = triple_objects.filter(_(1).contains("hasDelay"))
     val delays = delayed.map(x => x(2))
-    val max = delays.reduceByWindow((a, b) => Math,max(a, b), Seconds(1), Seconds(1))
+    val max = delays.reduceByWindow((a, b) => Math.max(a.toInt, b.toInt).toString, Seconds(1), Seconds(1))
     
     max.print()
   }
 
-  def query10(triple_objects: DStream) {
+  def query10(triple_objects: DStream[Array[String]]) {
     //TODO not sure if we can order, research further
     val windowed = triple_objects.window(Seconds(1), Seconds(1))
     val delayed = windowed.filter(_(1).contains("hasDelay"))
 
-    val result = delayed(x => (x(0), x(2)))
+    val result = delayed.map(x => (x(0), x(2)))
 
     result.print()
   }
 
-  def query11(triple_objects: DStream) {
+  def query11(triple_objects: DStream[Array[String]]) {
     //TODO implement static data
     val windowed = triple_objects.window(Seconds(1), Seconds(1))
     val delayed = windowed.filter(_(1).contains("hasDelay")).map(x => (x(0), x(2)))
@@ -152,7 +152,7 @@ object Reasoner {
     delayed.print()
   }
 
-  def query12(triple_objects: DStream) {
+  def query12(triple_objects: DStream[Array[String]]) {
     //TODO implement static data
     val windowed = triple_objects.window(Seconds(1), Seconds(1))
     val delayed = windowed.filter(_(1).contains("hasDelay")).map(x => (x(0), x(2)))
