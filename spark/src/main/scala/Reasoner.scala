@@ -7,16 +7,32 @@ import org.apache.spark._
 import org.apache.spark.streaming._
 import org.apache.spark.streaming.kafka._
 import org.apache.spark.streaming.dstream.DStream
+import org.apache.spark.rdd.RDD
 
 import scala.annotation.switch
 
 object Reasoner {
   def main(args: Array[String]) {
 
-    var query = args(0).toInt
+    var query = args(1).toInt
 
     val conf = new SparkConf().setAppName("Reasoner")
     val ssc = new StreamingContext(conf, Seconds(1))
+    var static_data = ssc.sparkContext.parallelize(Array((" ", " ")))
+
+    if (query == 11 || query == 12) {
+      //load static data
+      val input_file = ssc.sparkContext.textFile(args(2))
+      //we only need trip_id and stop_id for our simple examples
+      val split = input_file.map(x => x.split(','))
+      static_data = split.map(x => (x(0), x(3)))
+
+      println()
+      println()
+      println(static_data.count() + "stts read in ===========================")
+      println()
+      println()
+    }
 
     //val triplestream = ssc.socketTextStream("localhost", 9999)
     val topicMap = "gtfs".split(",").map((_, 1)).toMap
@@ -41,13 +57,14 @@ object Reasoner {
       case 8 => query08(triple_objects)
       case 9 => query09(triple_objects)
       case 10 => query10(triple_objects)
-      case 11 => query11(triple_objects)
-      case 12 => query12(triple_objects)
+      case 11 => query11(triple_objects, static_data)
+      case 12 => query12(triple_objects, static_data)
       case _ => println("unexpected query number")
     }
 
     ssc.start()
     ssc.awaitTermination()
+    //TODO output to text files instead of print()
   }
 
   def query01(triple_objects: DStream[Array[String]]) {
@@ -144,20 +161,22 @@ object Reasoner {
     result.print()
   }
 
-  def query11(triple_objects: DStream[Array[String]]) {
-    //TODO implement static data
+  def query11(triple_objects: DStream[Array[String]], static_data: RDD[(String, String)]) {
+    //TODO test this
     val windowed = triple_objects.window(Seconds(1), Seconds(1))
     val delayed = windowed.filter(_(1).contains("hasDelay")).map(x => (x(0), x(2)))
+    val result = delayed.transform(rdd => rdd.join(static_data))
 
-    delayed.print()
+    result.print()
   }
 
-  def query12(triple_objects: DStream[Array[String]]) {
-    //TODO implement static data
+  def query12(triple_objects: DStream[Array[String]], static_data: RDD[(String, String)]) {
+    //TODO test this
     val windowed = triple_objects.window(Seconds(1), Seconds(1))
     val delayed = windowed.filter(_(1).contains("hasDelay")).map(x => (x(0), x(2)))
+    val result = delayed.transform(rdd => rdd.leftOuterJoin(static_data))
 
-    delayed.print()
+    result.print()
   }
 
 
