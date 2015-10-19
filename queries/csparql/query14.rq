@@ -6,8 +6,8 @@ FROM STREAM <http://kr.tuwien.ac.at/dhsr/stream> [RANGE 5s STEP 5s]
 FROM <http://kr.tuwien.ac.at/dhsr/>
 WHERE {
 	?stt_id ns1:hasArrived ?real_arr. 
-    ?stt_id ns1:atStop ?st_id .
+  ?stt_id ns1:atStop ?st_id .
 	?st_id ns1:hasName ?st_name .
 	?stt_id ns1:hasArrtime ?plan_arr .
-    FILTER (?real_arr > ?plan_arr + 1000)
+  FILTER (?real_arr > ?plan_arr + 1000)
 }

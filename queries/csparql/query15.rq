@@ -8,8 +8,8 @@ FROM <http://kr.tuwien.ac.at/dhsr/>
 WHERE {
 	?stt1_id ns1:hasArrived ?arr1 . 
 	?stt2_id ns1:hasArrived ?arr2 . 
-    ?stt1_id ns1:atStop ?st_id .
-    ?stt2_id ns1:atStop ?st_id .
+  ?stt1_id ns1:atStop ?st_id .
+  ?stt2_id ns1:atStop ?st_id .
 	?st_id ns1:hasName ?st_name .
-    FILTER (?stt1_id != ?stt2_id && (?arr1 < ?arr2) && (?arr2 - ?arr1 < 500))
+  FILTER (?stt1_id != ?stt2_id && (?arr1 < ?arr2) && (?arr2 - ?arr1 < 500))
 }
