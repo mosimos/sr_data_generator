@@ -7,29 +7,31 @@
 %	}
 %ORDER BY ?del
 
-%TODO: can this be done?
+% determine list length
+upper(X) :- X = #count { S,D : hasDelay(S, D) }.
+slot(1..X) :- upper(X).
 
-has_some_before(Stt,Del) :- hasDelay(Stt,Del), hasDelay(SttP,DelP), DelP < Del.
+% guess a slot for each delay
+q(S,D,N) ; -q(S,D,N) :- hasDelay(S,D), slot(N).
 
-1 { q(Stt,Del,0); -q(Stt,Del,0) } 1 :- hasDelay(Stt,Del), not has_some_before(Stt,Del).
+% use each slot
+used_slot(N) :- q(_,_,N).
+:- slot(N), not used_slot(N).
 
-q(Stt2,Del2,NP) :- q(Stt,Del,N), next(Stt,Del,Stt2,Del2), NP=N+1.
+% use each used slot at most once
+:- q(S1,D1,N), q(S2,D2,N), not same(S1,D1,S2,D2).
 
-before(Stt1,Del1,Stt2,Del2) :- hasDelay(Stt1,Del1), hasDelay(Stt2,Del2), Del1 < Del2.
+same(S,D,S,D) :- hasDelay(S,D).
 
-beforeEq(Stt1,Del1,Stt2,Del2) :- hasDelay(Stt1,Del1), hasDelay(Stt2,Del2), Del1 <= Del2.
+% assign each delay to a slot
+:- hasDelay(S,D), not assigned(S,D).
+assigned(S,D) :- q(S,D,_).
 
-1 { next(Stt1,Del1,Stt2,Del2); -next(Stt1,Del1,Stt2,Del2)} 1 :- beforeEq(Stt1,Del1,Stt2,Del2).
-
--next(Stt1,Del1,Stt2,Del2) :- before(Stt1,Del1,Stt3,Del3), before(Stt3,Del3,Stt2,Del2).
-
-:- q(Stt1,Del1,N), q(Stt2,Del2,N), not same(Stt1,Del1,Stt2,Del2).
-
-same(Stt1,Del1,Stt2,Del2) :- hasDelay(Stt1,Del1), hasDelay(Stt2,Del2),
-Stt1=Stt2, Del1=Del2.
+% ensure ordering
+:- q(S1,D1,N1), q(S2,D2,N2), N1<N2, D2>D1.
 
 #show q/3.
 
-% hasDelay(s0,10). hasDelay(s1,10). hasDelay(s2,20).
+%hasDelay(max,100). hasDelay(middleA,75). hasDelay(middleB,75). hasDelay(min,66).
 
-% TODO
+
