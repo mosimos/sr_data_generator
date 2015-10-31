@@ -81,9 +81,9 @@ while True:
                             delay = stt_update.arrival.delay
 
                             if (args.plain):
-                                args.output_file.write(str(ns['stoptime/' + str(trip_id) + str(stop_sequence)]) + ' ns1:hasDelay ' + str(delay) + '\n')
+                                args.output_file.write(str(ns['stoptime/' + str(trip_id) + str(stop_sequence)]) + ' ' + ns['hasDelay'] + ' ' + str(delay) + '\n')
                             else:
-                                args.output_file.write(str(tstamp) + ' ' + str(ns['stoptime/' + str(trip_id) + str(stop_sequence)]) + ' ns1:hasDelay ' + str(delay) + '\n')
+                                args.output_file.write(str(tstamp) + ' ' + str(ns['stoptime/' + str(trip_id) + str(stop_sequence)]) + ' ' + ns['hasDelay'] + ' ' + str(delay) + '\n')
 
                             #duplicate elimination is tricky here, so we don't count these triples
                             #count += 1
@@ -112,9 +112,9 @@ while True:
                                 tstamp = entity.vehicle.timestamp
 
                                 if (args.plain):
-                                    args.output_file.write(str(ns['stoptime/' + str(trip_id) + str(stop_sequence)]) + ' ns1:hasArrived ' + str(tstamp) + '\n')
+                                    args.output_file.write(str(ns['stoptime/' + str(trip_id) + str(stop_sequence)]) + ' ' + ns['hasArrived'] + ' ' + str(tstamp) + '\n')
                                 else:
-                                    args.output_file.write(str(tstamp) + ' ' + str(ns['stoptime/' + str(trip_id) + str(stop_sequence)]) + ' ns1:hasArrived ' + str(tstamp) + '\n')
+                                    args.output_file.write(str(tstamp) + ' ' + str(ns['stoptime/' + str(trip_id) + str(stop_sequence)]) + ' ' + ns['hasArrived'] + ' ' + str(tstamp) + '\n')
                                 count += 1
 
                                 if count == args.limit:
