@@ -55,11 +55,13 @@ public class CsparqlShim
 			logger.error(e.getMessage(), e);
 		}
 
-		String static_data_path = args[0];
-		String querypath = args[1];
-		long windowPeriod = 1000;
-		long pausePeriod = Long.parseLong(args[2]);
-		long rate = Long.parseLong(args[3]);
+		if (args.length != 1 && args.length != 2) {
+			System.out.println("error: wrong number of arguments");
+			System.out.println("usage: java -jar CsqarlShim.java queryfile [static_dataset]");
+			System.exit(-1);
+		}
+
+		String querypath = args[0];
 
 		Path qpath = Paths.get(querypath);
 		List<String> lines;
@@ -69,18 +71,10 @@ public class CsparqlShim
 		try {
 			lines = Files.readAllLines(qpath, StandardCharsets.UTF_8);
 
-			Pattern p = Pattern.compile("FROM STREAM.*\\[RANGE (\\d*)s STEP \\d*s\\]");
-
 			for (String s : lines) {
 				//filter out comments
 				if (!s.startsWith("#")) {
 					sb.append(s).append(" ");
-
-					Matcher m = p.matcher(s);
-					if (m.find()) {
-						//set windowPeriod so it matches the RANGE of the query
-						windowPeriod = Long.parseLong(m.group(1)) * 1000;
-					}
 				}
 			}
 		} catch (IOException e) {
@@ -109,24 +103,20 @@ public class CsparqlShim
 		//TODO find out what this means
 		engine.initialize(true);
 
-		//load static data set
-		try {
-			if (!static_data_path.equals("none")) {
-				byte[] encoded = Files.readAllBytes(Paths.get(static_data_path));
+		if (args.length == 2) {
+			//load static data set
+			try {
+				byte[] encoded = Files.readAllBytes(Paths.get(args[1]));
 				String content = new String(encoded, StandardCharsets.UTF_8);
 				engine.putStaticNamedModel("http://kr.tuwien.ac.at/dhsr/", content);
+			} catch (IOException e) {
+				System.out.println("Couldn't load static data from file " + args[1]);
+				System.out.println(e);
 			}
-		} catch (IOException e) {
-			System.out.println("Couldn't load static data from file " + static_data_path);
-			System.out.println(e);
 		}
 
 		//initialize stream
 		StdinStream stream = new StdinStream("http://kr.tuwien.ac.at/dhsr/stream");
-		stream.setWindowPeriod(windowPeriod);
-		stream.setPausePeriod(pausePeriod);
-		stream.setRate(rate);
-
 
 		engine.registerStream(stream);
 
