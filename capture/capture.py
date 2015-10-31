@@ -23,20 +23,34 @@ from google.transit import gtfs_realtime_pb2
 import urllib
 import time
 import argparse
+import ConfigParser
 from subprocess import call
+import sys, os
 
 parser = argparse.ArgumentParser(description='Capture GTFS-realtime stream to file.')
 parser.add_argument('output_file', type=argparse.FileType('w'), help='output file')
 parser.add_argument('-t', '--type', choices=['t', 'v', 'b'], help='capture (t)rip updates, (v)ehicles or (b)oth', default='b')
-parser.add_argument('-ts', '--trip_update_stream', help='URL of the GTFS-realtime trip update stream', default='http://developer.trimet.org/ws/V1/TripUpdate/?appID=C06C7AC2D0839173A16C6BC28')
-parser.add_argument('-vs', '--vehicle_stream', help='URL of the GTFS-realtime vehicle stream', default='http://developer.trimet.org/ws/gtfs/VehiclePositions/?appID=C06C7AC2D0839173A16C6BC28')
-parser.add_argument('-n', '--namespace', default='http://kr.tuwien.ac.at/dhsr/')
 parser.add_argument('-l', '--limit', type=int, default=-1, help='maximum number of triples to capture')
-parser.add_argument('-p', '--plain', action='store_true', help='output triples without timestamp')
 
 args = parser.parse_args()
 
-ns = Namespace(args.namespace)
+trip_update_stream = ''
+vehicle_stream = ''
+namespace = ''
+
+try:
+    conf = ConfigParser.ConfigParser()
+    conf.read(os.path.dirname(sys.argv[0]) + '/streams.ini')
+    if args.type == 'b' or args.type == 't':
+        trip_update_stream = conf.get('streams', 'trip_update')
+    if args.type == 'b' or args.type == 'v':
+        vehicle_stream = conf.get('streams', 'vehicle')
+    namespace = conf.get('streams', 'namespace')
+except:
+    print 'error when parsing streams.ini file'
+
+ns = Namespace(namespace)
+
 
 #g = Graph(store='Sleepycat')
 #g.open('/home/mosi/rdflibstore')
@@ -45,11 +59,11 @@ g = Graph()
 
 #print('graph parsed')
 
-q = prepareQuery('SELECT ?stt_id '
-        'WHERE { '
-        '?trip_id ns1:hasStt ?stt_id. '
-        '?stt_id ns1:isSeq ?seq_nr. '
-        '}', initNs = {'ns1': ns})
+#q = prepareQuery('SELECT ?stt_id '
+        #'WHERE { '
+        #'?trip_id ns1:hasStt ?stt_id. '
+        #'?stt_id ns1:isSeq ?seq_nr. '
+        #'}', initNs = {'ns1': ns})
 
 feed = gtfs_realtime_pb2.FeedMessage()
 
@@ -60,8 +74,8 @@ print "Starting capture, press Ctrl-C to stop."
 
 while True:
     try:
-        if args.type == 'b' or args.type =='t':
-            response = urllib.urlopen(args.trip_update_stream)
+        if args.type == 'b' or args.type == 't':
+            response = urllib.urlopen(trip_update_stream)
             feed.ParseFromString(response.read())
 
             if feed.header.HasField('timestamp'):
@@ -80,10 +94,7 @@ while True:
                             stop_sequence = stt_update.stop_sequence
                             delay = stt_update.arrival.delay
 
-                            if (args.plain):
-                                args.output_file.write(str(ns['stoptime/' + str(trip_id) + str(stop_sequence)]) + ' ' + ns['hasDelay'] + ' ' + str(delay) + '\n')
-                            else:
-                                args.output_file.write(str(tstamp) + ' ' + str(ns['stoptime/' + str(trip_id) + str(stop_sequence)]) + ' ' + ns['hasDelay'] + ' ' + str(delay) + '\n')
+                            args.output_file.write(str(tstamp) + ' ' + str(ns['stoptime/' + str(trip_id) + str(stop_sequence)]) + ' ' + ns['hasDelay'] + ' ' + str(delay) + '\n')
 
                             #duplicate elimination is tricky here, so we don't count these triples
                             #count += 1
@@ -92,11 +103,11 @@ while True:
                                 #raise KeyboardInterrupt
 
 
-        if args.type == 'b' or args.type =='v':
+        if args.type == 'b' or args.type == 'v':
             if request_tstamp == 0:
-                response = urllib.urlopen(args.vehicle_stream)
+                response = urllib.urlopen(vehicle_stream)
             else:
-                response = urllib.urlopen(args.vehicle_stream + "&since=" + str(int(request_tstamp)))
+                response = urllib.urlopen(vehicle_stream + "&since=" + str(int(request_tstamp)))
 
             request_tstamp = time.time()
             feed.ParseFromString(response.read())
@@ -111,10 +122,7 @@ while True:
                                 stop_sequence = entity.vehicle.current_stop_sequence
                                 tstamp = entity.vehicle.timestamp
 
-                                if (args.plain):
-                                    args.output_file.write(str(ns['stoptime/' + str(trip_id) + str(stop_sequence)]) + ' ' + ns['hasArrived'] + ' ' + str(tstamp) + '\n')
-                                else:
-                                    args.output_file.write(str(tstamp) + ' ' + str(ns['stoptime/' + str(trip_id) + str(stop_sequence)]) + ' ' + ns['hasArrived'] + ' ' + str(tstamp) + '\n')
+                                args.output_file.write(str(tstamp) + ' ' + str(ns['stoptime/' + str(trip_id) + str(stop_sequence)]) + ' ' + ns['hasArrived'] + ' ' + str(tstamp) + '\n')
                                 count += 1
 
                                 if count == args.limit:
