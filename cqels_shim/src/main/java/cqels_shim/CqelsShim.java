@@ -40,15 +40,14 @@ import cqels_shim.StdinStream;
 public class CqelsShim 
 {
 	public static void main(String[] args) {
-		if (args.length != 3) {
+		if (args.length != 2 && args.length != 3) {
 			System.out.println("error: wrong number of arguments");
-			System.out.println("usage: java -jar CqelsShim.jar <cqels_home> <static_dataset> <queryfile>");
+			System.out.println("usage: java -jar CqelsShim.jar cqels_home queryfile [static_dataset]");
 			System.exit(-1);
 		}
 
 		String home = args[0];
-		String path = args[1];
-		String querypath = args[2];
+		String querypath = args[1];
 
 		Path qpath = Paths.get(querypath);
 		List<String> lines;
@@ -73,7 +72,9 @@ public class CqelsShim
 
 		final ExecContext context = new ExecContext(home, false);
 
-		context.loadDataset("http://kr.tuwien.ac.at/dhsr/", path);
+		if (args.length == 3) {
+			context.loadDataset("http://kr.tuwien.ac.at/dhsr/", args[2]);
+		}
 
 		//initialize stream
 		StdinStream stream = new StdinStream(context, "http://kr.tuwien.ac.at/dhsr/stream");
@@ -92,18 +93,11 @@ public class CqelsShim
 			} 
 		});
 
-		System.out.println("listening for data, press ENTER to stop");
+		System.out.println("listening for data");
 
 		//start streaming
 		(new Thread(stream)).start();
 		
-		try{
-			System.in.read();
-		} catch (IOException e) {
-			System.exit(-1);
-		}
-
-		stream.stop();
 		//TODO add way to exit nicely
 	}
 }
