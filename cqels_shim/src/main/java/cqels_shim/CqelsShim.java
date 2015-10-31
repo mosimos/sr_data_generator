@@ -33,6 +33,7 @@ import java.io.IOException;
 
 
 import cqels_shim.StdinStream;
+import cqels_shim.SocketStream;
 
 /**
  * a minimal shim to provide a standardized interface to cqels
@@ -40,14 +41,15 @@ import cqels_shim.StdinStream;
 public class CqelsShim 
 {
 	public static void main(String[] args) {
-		if (args.length != 2 && args.length != 3) {
+		if (args.length != 3 && args.length != 4) {
 			System.out.println("error: wrong number of arguments");
-			System.out.println("usage: java -jar CqelsShim.jar cqels_home queryfile [static_dataset]");
+			System.out.println("usage: java -jar CqelsShim.jar cqels_home port queryfile [static_dataset]");
 			System.exit(-1);
 		}
 
 		String home = args[0];
-		String querypath = args[1];
+		int port = Integer.parseInt(args[1]);
+		String querypath = args[2];
 
 		Path qpath = Paths.get(querypath);
 		List<String> lines;
@@ -72,12 +74,13 @@ public class CqelsShim
 
 		final ExecContext context = new ExecContext(home, false);
 
-		if (args.length == 3) {
-			context.loadDataset("http://kr.tuwien.ac.at/dhsr/", args[2]);
+		if (args.length == 4) {
+			context.loadDataset("http://kr.tuwien.ac.at/dhsr/", args[3]);
 		}
 
 		//initialize stream
-		StdinStream stream = new StdinStream(context, "http://kr.tuwien.ac.at/dhsr/stream");
+		//StdinStream stream = new StdinStream(context, "http://kr.tuwien.ac.at/dhsr/stream");
+		SocketStream stream = new SocketStream(context, "http://kr.tuwien.ac.at/dhsr/stream", port);
 
 		//register query
 		ContinuousSelect selQuery = context.registerSelect(queryString);
