@@ -64,14 +64,6 @@ public class CqelsShim
 
 		//TODO needed?
 		//queryString = queryString.replace('\n', '');
-		
-		//String queryString = "PREFIX ns1: <http://kr.tuwien.ac.at/dhsr/> " +
-			//"SELECT ?stop ?name " +
-			//"FROM NAMED <http://kr.tuwien.ac.at/dhsr/> " +
-			//"WHERE { " +
-			//"STREAM <http://kr.tuwien.ac.at/dhsr/stream> [NOW] " +
-			//"{?stop ns1:hasName ?name} }";
-
 
 		final ExecContext context = new ExecContext(home, false);
 
@@ -94,11 +86,18 @@ public class CqelsShim
 			} 
 		});
 
-		System.out.println("listening for data");
+		System.out.println("listening for data, press ENTER to stop");
 
 		//start streaming
 		(new Thread(stream)).start();
 		
+		try{
+			System.in.read();
+		} catch (IOException e) {
+			System.exit(-1);
+		}
+
+		stream.stop();
 		//TODO add way to exit nicely
 	}
 }
