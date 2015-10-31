@@ -40,6 +40,12 @@ import cqels_shim.StdinStream;
 public class CqelsShim 
 {
 	public static void main(String[] args) {
+		if (args.length != 3) {
+			System.out.println("error: wrong number of arguments");
+			System.out.println("usage: java -jar CqelsShim.jar <cqels_home> <static_dataset> <queryfile>");
+			System.exit(-1);
+		}
+
 		String home = args[0];
 		String path = args[1];
 		String querypath = args[2];
