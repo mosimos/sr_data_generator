@@ -10,11 +10,12 @@ import org.apache.spark.streaming.dstream.DStream
 import org.apache.spark.rdd.RDD
 
 import java.lang.ClassLoader
+import java.lang.ClassNotFoundException
 
 object Reasoner {
   def main(args: Array[String]) {
 
-    var query = args(1).toInt
+    var query = args(1)
 
     val conf = new SparkConf().setAppName("Reasoner")
     val ssc = new StreamingContext(conf, Seconds(1))
@@ -46,24 +47,23 @@ object Reasoner {
 
     //work with triples
     
-    var q
-
     try {
       var loader = Reasoner.getClass().getClassLoader()
-      var query_class = loader.loadClass("Query01")
-      q = query_class.newInstance
-    } catch (ClassLoaderException e) {
-      println("couldn't load class")
+      var query_class = loader.loadClass("Query" + query)
+      var q = query_class.newInstance
+
+      q match {
+        case q1: Query => q1.process(triple_objects, static_data)
+        case _ => println("error: couldn't load query " + query)
+      }
+
+      ssc.start()
+      ssc.awaitTermination()
+    } catch {
+      case e: ClassNotFoundException => println("error: couldn't find query " + query)
     }
 
 
-    q match {
-      case q1: Query => q1.process(triple_objects, static_data)
-      case _ => println("couldn't load query" + query)
-    }
-
-    ssc.start()
-    ssc.awaitTermination()
     //TODO output to text files instead of print()
   }
 
