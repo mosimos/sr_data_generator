@@ -2,7 +2,7 @@ PREFIX ns1: <http://kr.tuwien.ac.at/dhsr/>
 SELECT ?stt_id ?del
 FROM NAMED <http://kr.tuwien.ac.at/dhsr/>
 WHERE {
-STREAM <http://kr.tuwien.ac.at/dhsr/stream> [NOW]
+STREAM <http://kr.tuwien.ac.at/dhsr/stream> [RANGE 1s TUMBLING]
 {?stt_id ns1:hasDelay ?del}
 }
 

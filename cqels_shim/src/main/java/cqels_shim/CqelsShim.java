@@ -30,6 +30,10 @@ import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.nio.charset.StandardCharsets;
 import java.io.IOException;
+import java.io.Writer;
+import java.io.BufferedWriter;
+import java.io.OutputStreamWriter;
+import java.io.FileOutputStream;
 
 
 import cqels_shim.StdinStream;
@@ -41,9 +45,9 @@ import cqels_shim.SocketStream;
 public class CqelsShim 
 {
 	public static void main(String[] args) {
-		if (args.length != 3 && args.length != 4) {
-			System.out.println("error: wrong number of arguments");
-			System.out.println("usage: java -jar CqelsShim.jar cqels_home port queryfile [static_dataset]");
+		if (args.length != 4 && args.length != 5) {
+			System.err.println("error: wrong number of arguments");
+			System.err.println("usage: java -jar CqelsShim.jar cqels_home port queryfile outputfile [static_dataset]");
 			System.exit(-1);
 		}
 
@@ -69,13 +73,10 @@ public class CqelsShim
 
 		String queryString = sb.toString();
 
-		//TODO needed?
-		//queryString = queryString.replace('\n', '');
-
 		final ExecContext context = new ExecContext(home, false);
 
-		if (args.length == 4) {
-			context.loadDataset("http://kr.tuwien.ac.at/dhsr/", args[3]);
+		if (args.length == 5) {
+			context.loadDataset("http://kr.tuwien.ac.at/dhsr/", args[4]);
 		}
 
 		//initialize stream
@@ -84,24 +85,38 @@ public class CqelsShim
 
 		//register query
 		ContinuousSelect selQuery = context.registerSelect(queryString);
-		selQuery.register(new ContinuousListener() {
-			public void update(Mapping mapping) {
-				System.out.println("result:");
-				String result = "";
-				for(Iterator<Var> vars = mapping.vars(); vars.hasNext(); ) {
-					//Use context.engine().decode(...) to decode the encoded value to RDF Node
-					result += " " + context.engine().decode(mapping.get(vars.next()));
+
+
+		try {
+			final Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(args[3]), "utf-8"));
+			selQuery.register(new ContinuousListener() {
+				public void update(Mapping mapping) {
+					String result = "";
+					for(Iterator<Var> vars = mapping.vars(); vars.hasNext(); ) {
+						//Use context.engine().decode(...) to decode the encoded value to RDF Node
+						result += " " + context.engine().decode(mapping.get(vars.next()));
+					}
+					System.out.println(result);
+					try {
+						writer.write(result + "\n");
+						writer.flush();
+					} catch (IOException e) {
+						System.err.println(e);
+					}
 				}
-				System.out.println(result);
-			} 
-		});
+			});
+		} catch (IOException ex) {
+			System.err.println("error: couldn't open outputfile " + args[3]);
+			System.exit(1);
+		}
 
 		System.out.println("listening for data");
 
 		//start streaming
 		(new Thread(stream)).start();
 		
-		//TODO add way to exit nicely
+		//can't find a way to exit nicely, cqels continues even if we stop our thread
+		//nowhere to call writer.close() ?
 	}
 }
 
