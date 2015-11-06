@@ -43,22 +43,30 @@ object Reasoner {
     //parse triples from JSON
     val triplestream = messages.map(_._2)
     val json_asts = triplestream.map(_.parseJson)
-    val triple_objects = json_asts.map(_.convertTo[Array[String]])
+    val triple_objects = json_asts.map(_.convertTo[Seq[String]])
 
     //work with triples
     
     try {
       var loader = Reasoner.getClass().getClassLoader()
-      var query_class = loader.loadClass("Query" + query)
+      var query_class = loader.loadClass(query)
       var q = query_class.newInstance
 
-      q match {
+      var res = q match {
         case q1: Query => q1.process(triple_objects, static_data)
-        case _ => println("error: couldn't load query " + query)
+        case _ => null
       }
 
-      ssc.start()
-      ssc.awaitTermination()
+      if (res == null) {
+        println("error: couldn't load query " + query)
+      }
+      else {
+        res.print()
+        res.saveAsTextFiles(args(3) + query)
+
+        ssc.start()
+        ssc.awaitTermination()
+      }
     } catch {
       case e: ClassNotFoundException => println("error: couldn't find query " + query)
     }
