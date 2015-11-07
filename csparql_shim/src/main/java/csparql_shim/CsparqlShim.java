@@ -41,6 +41,7 @@ import eu.larkc.csparql.core.engine.CsparqlQueryResultProxy;
 
 import csparql_shim.StdinStream;
 import csparql_shim.SocketStream;
+import csparql_shim.FileFormatter;
 
 /**
  * a minimal shim to provide a standardized interface to csparql
@@ -56,9 +57,9 @@ public class CsparqlShim
 			logger.error(e.getMessage(), e);
 		}
 
-		if (args.length != 2 && args.length != 3) {
+		if (args.length != 3 && args.length != 4) {
 			System.err.println("error: wrong number of arguments");
-			System.err.println("usage: java -jar CsqarlShim.java port queryfile [static_dataset]");
+			System.err.println("usage: java -jar CsqarlShim.java port queryfile outputfile [static_dataset]");
 			System.exit(-1);
 		}
 
@@ -105,14 +106,14 @@ public class CsparqlShim
 		//TODO find out what this means
 		engine.initialize(true);
 
-		if (args.length == 3) {
+		if (args.length == 4) {
 			//load static data set
 			try {
-				byte[] encoded = Files.readAllBytes(Paths.get(args[2]));
+				byte[] encoded = Files.readAllBytes(Paths.get(args[3]));
 				String content = new String(encoded, StandardCharsets.UTF_8);
 				engine.putStaticNamedModel("http://kr.tuwien.ac.at/dhsr/", content);
 			} catch (IOException e) {
-				System.err.println("Couldn't load static data from file " + args[2]);
+				System.err.println("Couldn't load static data from file " + args[3]);
 				System.err.println(e);
 			}
 		}
@@ -136,8 +137,10 @@ public class CsparqlShim
 
 		// Attach a Result Formatter to the query result proxy
 
+		FileFormatter ff = new FileFormatter(args[2]);
 		if (c1 != null) {
 			c1.addObserver(new ConsoleFormatter());
+			c1.addObserver(ff);
 		}
 		else {
 			System.err.println("error, c1 == null");
@@ -157,6 +160,7 @@ public class CsparqlShim
 
 		engine.unregisterQuery(c1.getId());
 		engine.unregisterStream(stream.getIRI());
+		ff.close();
 	}
 }
 
