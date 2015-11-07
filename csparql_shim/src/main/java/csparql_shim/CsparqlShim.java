@@ -57,8 +57,8 @@ public class CsparqlShim
 		}
 
 		if (args.length != 2 && args.length != 3) {
-			System.out.println("error: wrong number of arguments");
-			System.out.println("usage: java -jar CsqarlShim.java port queryfile [static_dataset]");
+			System.err.println("error: wrong number of arguments");
+			System.err.println("usage: java -jar CsqarlShim.java port queryfile [static_dataset]");
 			System.exit(-1);
 		}
 
@@ -112,8 +112,8 @@ public class CsparqlShim
 				String content = new String(encoded, StandardCharsets.UTF_8);
 				engine.putStaticNamedModel("http://kr.tuwien.ac.at/dhsr/", content);
 			} catch (IOException e) {
-				System.out.println("Couldn't load static data from file " + args[2]);
-				System.out.println(e);
+				System.err.println("Couldn't load static data from file " + args[2]);
+				System.err.println(e);
 			}
 		}
 
@@ -140,7 +140,7 @@ public class CsparqlShim
 			c1.addObserver(new ConsoleFormatter());
 		}
 		else {
-			System.out.println("error, c1 == null");
+			System.err.println("error, c1 == null");
 		}
 
 
@@ -150,15 +150,13 @@ public class CsparqlShim
 		(new Thread(stream)).start();
 		
 		try {
-			Thread.sleep(50000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+			System.in.read();
+		} catch(IOException e) {
+			System.err.println(e);
 		}
 
-		//engine.unregisterQuery(c1.getId());
-		//engine.unregisterStream(stream.getIRI());
-
-		//TODO add way to exit nicely
+		engine.unregisterQuery(c1.getId());
+		engine.unregisterStream(stream.getIRI());
 	}
 }
 
