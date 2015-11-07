@@ -3,6 +3,6 @@ SELECT ?stt_id ?del
 FROM NAMED <http://kr.tuwien.ac.at/dhsr/>
 WHERE {
 STREAM <http://kr.tuwien.ac.at/dhsr/stream> [RANGE 1s TUMBLING]
-{?stt_id ns1:hasDelay ?del}
+{?stt_id ns1:hasArrived ?del}
 }
 

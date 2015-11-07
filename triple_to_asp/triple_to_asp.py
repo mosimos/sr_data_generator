@@ -28,7 +28,7 @@ triplecount = 0
 
 outputfile_base = (args.input_file.name.split('/')[-1]).split('.')[0]
 
-out = open(args.output_directory + '/' + outputfile_base + str(filecount).zfill(2) + '.lp', 'w')
+out = open(args.output_directory + '/' + outputfile_base + '_' + str(filecount).zfill(3) + '.lp', 'w')
 
 
 for line in args.input_file:
@@ -46,7 +46,7 @@ for line in args.input_file:
             filecount += 1
             outputfile_base = (args.input_file.name.split('/')[-1]).split('.')[0]
             out.close()
-            out = open(args.output_directory + '/' + outputfile_base + str(filecount).zfill(2) + '.lp', 'w')
+            out = open(args.output_directory + '/' + outputfile_base + '_' + str(filecount).zfill(3) + '.lp', 'w')
             triplecount = 0
 
         out.write(p + '(' + s + ', ' + o +').\n')

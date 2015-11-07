@@ -87,8 +87,6 @@ object Reasoner {
       case e: ClassNotFoundException => println("error: couldn't find query " + query)
     }
 
-
-    //TODO output to text files instead of print()
   }
 
 }
