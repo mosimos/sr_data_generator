@@ -24,7 +24,7 @@ import argparse
 #expects a timestamp in the first line as starttime
 #and timestamps at the beginning of every consecutive line
 
-parser = argparse.ArgumentParser(description='Stream triples read from capture_file to stdout')
+parser = argparse.ArgumentParser(description='Stream triples read from capture_file to stdout using the timing provided in the capture file')
 parser.add_argument('capture_file', type=argparse.FileType('r'))
 
 args = parser.parse_args()
