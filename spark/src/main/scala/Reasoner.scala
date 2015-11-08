@@ -28,8 +28,26 @@ import org.apache.spark.rdd.RDD
 import java.lang.ClassLoader
 import java.lang.ClassNotFoundException
 
+/*
+ ../../spark-1.5.0-bin-hadoop2.6/bin/spark-submit --class "Reasoner" --master 'local[4]' target/scala-2.10/gtfs-reasoner-assembly.jar localhost Query01 ../../gtfs_datasets/portland/stop_times.txt ../../results/spark/
+ */
+
 object Reasoner {
   def main(args: Array[String]) {
+
+    if (args.length != 3 && args.length !=4) {
+      println("error: wrong number of arguments")
+      println("usage: Reasoner zk_quorum query output_dir [static_dataset]")
+      println()
+      println("propositional arguments:");
+      println("  zk_quorum\t\tZookeeper quorum, where to listen for streaming data using Kafka");
+      println("  query\t\t\tclass name of query to run");
+      println("  output_dir\t\tdirectory where to output data");
+      println();
+      println("optional arguments:");
+      println("  static_dataset\tfile containing a static dataset");
+      System.exit(1)
+    }
 
     var query = args(1)
 
@@ -39,7 +57,7 @@ object Reasoner {
 
     if (query == 11 || query == 12) {
       //load static data
-      val input_file = ssc.sparkContext.textFile(args(2))
+      val input_file = ssc.sparkContext.textFile(args(3))
       //we only need trip_id and stop_id for our simple examples
       val split = input_file.map(x => x.split(','))
       static_data = split.map(x => (x(0), x(3)))
@@ -78,7 +96,7 @@ object Reasoner {
       }
       else {
         res.print()
-        res.saveAsTextFiles(args(3) + query)
+        res.saveAsTextFiles(args(2) + query)
 
         ssc.start()
         ssc.awaitTermination()
