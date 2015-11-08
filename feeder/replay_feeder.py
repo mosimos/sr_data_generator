@@ -14,36 +14,31 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-import sys
-import re
 import json
 import time
 import argparse
 
 #streams triples from a file to a streaming engine
-#expects a timestamp in the first line as starttime
-#and timestamps at the beginning of every consecutive line
+#expects timestamps at the beginning of every line
 
 parser = argparse.ArgumentParser(description='Stream triples read from capture_file to stdout using the timing provided in the capture file')
 parser.add_argument('capture_file', type=argparse.FileType('r'))
 
 args = parser.parse_args()
 
-starttime = float(args.capture_file.readline()[:-1])
+starttime = float(args.capture_file.readline().split(' ')[0])
 offset = time.time() - starttime
+
+args.capture_file.seek(0)
 
 for line in args.capture_file:
     l = line.split(' ', 1)
-    m = re.match(r"stream_post\((\w+), (\w+), (.+)\).", l[1])
-    if m:
-        time.sleep(max(0, float(l[0]) + offset - time.time()))
-        print(json.dumps(m.groups()))
+    time.sleep(max(0, (float(l[0]) + offset - time.time()) / 1000 ))
+    triple = l[1].split(' ')
+    if len(triple) == 3:
+        print(json.dumps(triple))
     else:
-        triple = l[1].split(" ")
-        if len(triple) == 3:
-            print(json.dumps(triple))
-        else:
-            print('match error')
+        print('match error')
 
 
 
