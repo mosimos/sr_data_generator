@@ -60,6 +60,16 @@ public class CsparqlShim
 		if (args.length != 3 && args.length != 4) {
 			System.err.println("error: wrong number of arguments");
 			System.err.println("usage: java -jar CsqarlShim.java port queryfile outputfile [static_dataset]");
+			System.err.println();
+			System.err.println("Provides a standardized interface to the C-SPARQL engine.");
+			System.err.println();
+			System.err.println("propositional arguments:");
+			System.err.println("  port\t\t\tport for listening for streaming data");
+			System.err.println("  queryfile\t\tfile containing a query");
+			System.err.println("  outputfile\t\toutput file");
+			System.err.println();
+			System.err.println("optional arguments:");
+			System.err.println("  static_dataset\tfile containing a static dataset");
 			System.exit(-1);
 		}
 

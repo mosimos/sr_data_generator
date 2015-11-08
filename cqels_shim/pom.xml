@@ -4,7 +4,7 @@
 	<groupId>cqels_shim</groupId>
 	<artifactId>cqels_shim</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0-SNAPSHOT</version>
+	<version>1.0</version>
 	<name>cqels_shim</name>
 	<repositories>
 		<repository>

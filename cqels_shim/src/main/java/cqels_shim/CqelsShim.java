@@ -48,6 +48,17 @@ public class CqelsShim
 		if (args.length != 4 && args.length != 5) {
 			System.err.println("error: wrong number of arguments");
 			System.err.println("usage: java -jar CqelsShim.jar cqels_home port queryfile outputfile [static_dataset]");
+			System.err.println();
+			System.err.println("Provides a standardized interface to the CQELS engine.");
+			System.err.println();
+			System.err.println("positional arguments:");
+			System.err.println("  cqels_home\t\tworking directory used by CQELS engine");
+			System.err.println("  port\t\t\tport for listening for streaming data");
+			System.err.println("  queryfile\t\tfile containing a query");
+			System.err.println("  outputfile\t\toutput file");
+			System.err.println();
+			System.err.println("optional arguments:");
+			System.err.println("  static_dataset\tfile containing a static dataset");
 			System.exit(-1);
 		}
 
