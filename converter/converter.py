@@ -21,8 +21,8 @@ from transitfeed import Loader, Schedule
 from rdflib import Graph, URIRef, Literal, BNode, Namespace
 import argparse
 
-parser = argparse.ArgumentParser(description='Convert GTFS dataset to RDF or ASP.')
-parser.add_argument('gtfs_path', help='path to the GTFS dataset')
+parser = argparse.ArgumentParser(description='Convert GTFS data set to RDF or ASP.')
+parser.add_argument('gtfs_path', help='path to the GTFS data set')
 parser.add_argument('output_file', type=argparse.FileType('w'), help='output file')
 parser.add_argument('-f', '--format', choices=['asp', 'xml', 'turtle', 'nt'], default='turtle')
 parser.add_argument('-l', '--limit', type=int, default=-1, help='maximum number of trips to convert')

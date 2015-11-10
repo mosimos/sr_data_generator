@@ -2,7 +2,7 @@
 PREFIX ns1: <http://kr.tuwien.ac.at/dhsr/>
 SELECT ?st_name ?real_arr ?plan_arr
 WHERE {
-	STREAM <http://kr.tuwien.ac.at/dhsr/stream> [RANGE 2s]
+	STREAM <http://kr.tuwien.ac.at/dhsr/stream> [RANGE 1s TUMBLING]
 	{?stt_id ns1:hasArrived ?real_arr. 
 	}
 	GRAPH <http://kr.tuwien.ac.at/dhsr/>

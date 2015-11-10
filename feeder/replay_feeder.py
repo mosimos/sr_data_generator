@@ -17,6 +17,7 @@
 import json
 import time
 import argparse
+import sys
 
 #streams triples from a file to a streaming engine
 #expects timestamps at the beginning of every line
@@ -32,11 +33,12 @@ offset = time.time() - starttime
 args.capture_file.seek(0)
 
 for line in args.capture_file:
-    l = line.split(' ', 1)
+    l = line.rstrip().split(' ', 1)
     time.sleep(max(0, (float(l[0]) + offset - time.time()) / 1000 ))
     triple = l[1].split(' ')
     if len(triple) == 3:
         print(json.dumps(triple))
+        sys.stdout.flush()
     else:
         print('match error')
 

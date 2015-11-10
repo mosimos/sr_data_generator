@@ -17,7 +17,7 @@
 import argparse
 import time
 
-parser = argparse.ArgumentParser(description='Convert captured triples to ASP facts, split into multiple files, each coresponding to a tumbling window.')
+parser = argparse.ArgumentParser(description='Convert captured triples to ASP facts, split into multiple files, each corresponding to a tumbling window.')
 subparsers = parser.add_subparsers(help='operation mode', dest='mode')
 
 parser_rep = subparsers.add_parser('replay', help='mimic the replay_feeder script')
