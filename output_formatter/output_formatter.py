@@ -14,12 +14,15 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+#TODO implement sorting inside of a window
+
 import argparse
 import os
 import re
 
 parser = argparse.ArgumentParser(description='Converts results to a single comparable format.')
 parser.add_argument('path', help='path to the results')
+parser.add_argument('-s', '--sort', action='store_true', help='sort results inside a window')
 
 args = parser.parse_args()
 
