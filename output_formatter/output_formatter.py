@@ -28,7 +28,7 @@ if not os.access(args.path, os.W_OK):
     exit(1)
 
 #matches a fact of arity 1 or more
-asp_match = re.compile(r'\w+\(([\w\,]+)\)\.')
+asp_match = re.compile(r'\w+\(([\w\-\,]+)\)\.')
 semweb_schema_match = re.compile(r'\"(\w+)\"\^\^http.*XMLSchema.*')
 spark_match = re.compile(r'List\((.+)\)')
 
@@ -65,7 +65,7 @@ for subdir in os.listdir(args.path):
                                 if res:
                                     out.write(res.group(1).replace(',', ' ') + '\n')
                             asp = False
-                        elif line.lstrip().startswith('http'):
+                        elif 'http' in line:
                             #we got a semweb file
                             outstr = ''
                             splchar = ' '

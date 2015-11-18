@@ -53,14 +53,14 @@ object Reasoner {
 
     val conf = new SparkConf().setAppName("Reasoner")
     val ssc = new StreamingContext(conf, Seconds(1))
+    ssc.checkpoint("~/spark_chkpointdir")
     var static_data = ssc.sparkContext.parallelize(Array((" ", " ")))
-
-    if (query == 11 || query == 12) {
+    if (args.length == 4) {
       //load static data
       val input_file = ssc.sparkContext.textFile(args(3))
-      //we only need trip_id and stop_id for our simple examples
+      //we only need trip_id, stop_id and stop_sequence for our simple examples
       val split = input_file.map(x => x.split(','))
-      static_data = split.map(x => (x(0), x(3)))
+      static_data = split.map(x => ("stoptime" + x(0) + x(4), x(3)))
 
       println()
       println()

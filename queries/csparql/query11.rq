@@ -1,7 +1,7 @@
 REGISTER QUERY q11 AS
 PREFIX ns1: <http://kr.tuwien.ac.at/dhsr/>
 SELECT ?stt_id ?st_id ?del
-FROM STREAM <http://kr.tuwien.ac.at/dhsr/stream> [RANGE 5s STEP 5s]
+FROM STREAM <http://kr.tuwien.ac.at/dhsr/stream> [RANGE 1s STEP 1s]
 FROM <http://kr.tuwien.ac.at/dhsr/>
 WHERE {
 	?stt_id ns1:hasDelay ?del.
